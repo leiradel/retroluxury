@@ -17,9 +17,9 @@ typedef struct
 {
   rl_userdata_t ud;
   
-  int       width;     /* the image width */
-  int       height;    /* the image height */
-  int       used;      /* number of overwritten pixels on the background */
+  int width;     /* the image width */
+  int height;    /* the image height */
+  int used;      /* number of overwritten pixels on the background */
   
   const uint32_t* rows; /* offsets to rle data for each row */
   
@@ -32,6 +32,8 @@ rl_image_t* rl_image_create( const void* data, size_t size );
 /* Destroys an image. */
 #define rl_image_destroy( image ) do { rl_free( image ); } while ( 0 )
 
+/* Blits an image to the given background. */
+void rl_image_blit_nobg( const rl_image_t* image, int x, int y );
 /* Blits an image to the given background, saving overwritten pixels in bg. */
 uint16_t* rl_image_blit( const rl_image_t* image, int x, int y, uint16_t* bg );
 /* Erases an image from the given background, restoring overwritten pixels from bg. */
