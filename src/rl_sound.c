@@ -135,7 +135,7 @@ void rl_sound_stop( int index )
   voice->sound = NULL;
 }
 
-void rl_sound_stopall( void )
+void rl_sound_stop_all( void )
 {
   voice_t* restrict voice = voices;
   const voice_t* restrict end = voices + RL_MAX_VOICES;

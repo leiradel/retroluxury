@@ -29,7 +29,7 @@ rl_sound_t* rl_sound_create( const void* data, size_t size, int stereo );
 int  rl_sound_play( const rl_sound_t* sound, int repeat, rl_soundstop_t stop_cb );
 void rl_sound_stop( int index );
 
-void rl_sound_stopall( void );
+void rl_sound_stop_all( void );
 
 int  rl_sound_play_ogg( const void* data, size_t size, int repeat, rl_soundstop_t stop_cb );
 void rl_sound_stop_ogg( void );
