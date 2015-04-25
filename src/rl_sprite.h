@@ -14,17 +14,18 @@ pixels when their images are blit so it can be restored before the beginning
 of the next frame.
 */
 
-#define RL_SPRITE_INVISIBLE  0x4000U
-#define RL_SPRITE_UNUSED     0x8000U
-#define RL_SPRITE_FLAGS_MASK 0xc000U
+#define RL_SPRITE_TEMP_INV   0x0001U
+#define RL_SPRITE_INVISIBLE  0x0002U
+#define RL_SPRITE_UNUSED     0x0004U
 
 typedef struct
 {
   rl_userdata_t ud;
   
-  uint16_t layer; /* layer and flags */
-  int16_t  x;
-  int16_t  y;
+  uint16_t layer;
+  uint16_t flags;
+  int      x;
+  int      y;
   
   rl_image_t* image; /* the sprite's image */
 }
@@ -33,7 +34,7 @@ rl_sprite_t;
 void rl_sprite_init( void );
 
 rl_sprite_t* rl_sprite_create( void );
-#define      rl_sprite_destroy( sprite ) do { ( sprite )->layer |= RL_SPRITE_UNUSED; } while ( 0 )
+#define      rl_sprite_destroy( sprite ) do { ( sprite )->flags |= RL_SPRITE_UNUSED; } while ( 0 )
 
 void rl_sprites_begin( void );
 void rl_sprites_end( void );

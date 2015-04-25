@@ -27,7 +27,7 @@ rl_sprite_t* rl_sprite_create( void )
   {
     rl_sprite_t* sprite = &sprites[ num_sprites++ ].sprite;
     
-    sprite->layer = 0;
+    sprite->layer = sprite->flags = 0;
     sprite->x = sprite->y = 0;
     sprite->image = NULL;
     
@@ -42,8 +42,11 @@ static int compare( const void* e1, const void* e2 )
   const spt_t* s1 = (const spt_t*)e1;
   const spt_t* s2 = (const spt_t*)e2;
   
-  int32_t c1 = s1->sprite.layer | ( -( s1->sprite.image == NULL ) & RL_SPRITE_INVISIBLE );
-  int32_t c2 = s2->sprite.layer | ( -( s2->sprite.image == NULL ) & RL_SPRITE_INVISIBLE );
+  int32_t c1 = s1->sprite.flags;
+  int32_t c2 = s2->sprite.flags;
+  
+  c1 = c1 << 16 | s1->sprite.layer;
+  c2 = c2 << 16 | s2->sprite.layer;
   
   return c1 - c2;
 }
@@ -51,15 +54,28 @@ static int compare( const void* e1, const void* e2 )
 void rl_sprites_begin( void )
 {
   spt_t* sptptr = sprites;
+  const spt_t* endptr = sprites + num_sprites;
+  
+  if ( sptptr < endptr )
+  {
+    do
+    {
+      sptptr->sprite.flags &= ~RL_SPRITE_TEMP_INV;
+      sptptr->sprite.flags |= sptptr->sprite.image == NULL;
+      sptptr++;
+    }
+    while ( sptptr < endptr );
+  }
   
   qsort( (void*)sprites, num_sprites, sizeof( spt_t ), compare );
-  sprites[ num_sprites ].sprite.layer = RL_SPRITE_UNUSED; /* guard */
+  sprites[ num_sprites ].sprite.flags = RL_SPRITE_UNUSED; /* guard */
   
+  sptptr    = sprites;
   saved_ptr = saved_backgrnd;
   
   /* Iterate over active and visible sprites and blit them */
-  /* layer & 0xc000U == 0 */
-  if ( ( sptptr->sprite.layer & RL_SPRITE_FLAGS_MASK ) == 0 )
+  /* flags & 0x0007U == 0 */
+  if ( sptptr->sprite.flags == 0 )
   {
     do
     {
@@ -67,20 +83,20 @@ void rl_sprites_begin( void )
       saved_ptr = rl_image_blit( sptptr->sprite.image, sptptr->sprite.x, sptptr->sprite.y, saved_ptr );
       sptptr++;
     }
-    while ( ( sptptr->sprite.layer & RL_SPRITE_FLAGS_MASK ) == 0 );
+    while ( sptptr->sprite.flags == 0 );
   }
   
   num_visible = sptptr - sprites;
   
   /* Jump over active but invisible sprites */
-  /* layer & 0xc000U == 0x4000U */
-  if ( ( sptptr->sprite.layer & RL_SPRITE_FLAGS_MASK ) == RL_SPRITE_INVISIBLE )
+  /* flags & 0x0004U == 0x0000U */
+  if ( ( sptptr->sprite.flags & RL_SPRITE_UNUSED ) == 0 )
   {
     do
     {
       sptptr++;
     }
-    while ( ( sptptr->sprite.layer & RL_SPRITE_FLAGS_MASK ) == RL_SPRITE_INVISIBLE );
+    while ( ( sptptr->sprite.flags & RL_SPRITE_UNUSED ) == 0 );
   }
   
   num_sprites = sptptr - sprites;
