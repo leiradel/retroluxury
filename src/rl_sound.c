@@ -35,7 +35,7 @@ typedef struct
 }
 voice_t;
 
-static int16_t audio_buffer[ RL_SAMPLES_PER_SEC * 2 ];
+static int16_t audio_buffer[ RL_SAMPLES_PER_FRAME * 2 ];
 static voice_t voices[ RL_MAX_VOICES ];
 
 static stb_vorbis*      ogg_stream;
@@ -148,6 +148,7 @@ void rl_sound_stop_all( void )
     }
     
     voice->sound = NULL;
+    voice++;
   }
 }
 
@@ -220,7 +221,7 @@ void rl_sound_stop_ogg( void )
 
 static void mix( int32_t* buffer, voice_t* voice )
 {
-  int buf_free = RL_SAMPLES_PER_SEC * 2;
+  int buf_free = RL_SAMPLES_PER_FRAME * 2;
   const rl_sound_t* sound = voice->sound;
   
 again:
@@ -306,7 +307,7 @@ static void ogg_mix( int32_t* buffer )
 {
   if ( ogg_stream )
   {
-    int buf_free = RL_SAMPLES_PER_SEC * 2;
+    int buf_free = RL_SAMPLES_PER_FRAME * 2;
     
     if ( ogg_position == ogg_available )
     {
@@ -364,7 +365,7 @@ static void ogg_mix( int32_t* buffer )
 
 const int16_t* rl_sound_mix( void )
 {
-  int32_t buffer[ RL_SAMPLES_PER_SEC * 2 ];
+  int32_t buffer[ RL_SAMPLES_PER_FRAME * 2 ];
   memset( buffer, 0, sizeof( buffer ) );
   
   voice_t* restrict voice = voices;
@@ -383,7 +384,7 @@ const int16_t* rl_sound_mix( void )
   
   ogg_mix( buffer );
   
-  for ( int i = 0; i < RL_SAMPLES_PER_SEC * 2; i++ )
+  for ( int i = 0; i < RL_SAMPLES_PER_FRAME * 2; i++ )
   {
     int32_t sample = buffer[ i ];
     audio_buffer[ i ] = sample < -32768 ? -32768 : sample > 32767 ? 32767 : sample;

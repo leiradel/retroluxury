@@ -6,8 +6,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-/* Number of 16-bit stereo samples per second. DO NOT CHANGE! */
-#define RL_SAMPLES_PER_SEC 735
+/* Number of 16-bit stereo samples per frame. DO NOT CHANGE! */
+#define RL_SAMPLES_PER_FRAME 735
 
 typedef struct
 {
