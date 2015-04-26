@@ -14,9 +14,9 @@ pixels when their images are blit so it can be restored before the beginning
 of the next frame.
 */
 
-#define RL_SPRITE_TEMP_INV   0x0001U
-#define RL_SPRITE_INVISIBLE  0x0002U
-#define RL_SPRITE_UNUSED     0x0004U
+#define RL_SPRITE_TEMP_INV  0x0001U
+#define RL_SPRITE_INVISIBLE 0x0002U
+#define RL_SPRITE_UNUSED    0x0004U
 
 typedef struct
 {
