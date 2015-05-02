@@ -1,7 +1,6 @@
 #ifndef RL_IMAGE_H
 #define RL_IMAGE_H
 
-#include <rl_backgrnd.h>
 #include <rl_userdata.h>
 
 #include <stdint.h>
