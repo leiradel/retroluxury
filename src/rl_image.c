@@ -329,7 +329,7 @@ uint16_t* rl_image_blit( const rl_image_t* image, int x, int y, uint16_t* bg_ )
   return bg;
 }
 
-void rl_image_unblit( const rl_image_t* image, int x, int y, uint16_t* bg_ )
+void rl_image_unblit( const rl_image_t* image, int x, int y, const uint16_t* bg_ )
 {
   int x0 = 0;
   int y0 = 0;
@@ -364,7 +364,7 @@ void rl_image_unblit( const rl_image_t* image, int x, int y, uint16_t* bg_ )
     y1 -= y + y1 - height;
   }
   
-  uint16_t* restrict bg = bg_;
+  const uint16_t* restrict bg = bg_;
   
   if ( y1 > 0 && x1 > 0 )
   {
