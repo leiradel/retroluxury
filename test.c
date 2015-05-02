@@ -9,15 +9,17 @@
 #include <rl_image.h>
 #include <rl_sprite.h>
 #include <rl_sound.h>
+#include <rl_tile.h>
 
 #include <button_x.h>
 #include <tick.h>
 #include <sketch008.h>
+#include <tile_x.h>
 
 /*---------------------------------------------------------------------------*/
 
-#define WIDTH  320
-#define HEIGHT 240
+#define WIDTH  400
+#define HEIGHT 300
 
 /*---------------------------------------------------------------------------*/
 
@@ -180,7 +182,7 @@ static void testscr_update( testscr_t* s )
   {
     rl_backgrnd_clear( 0 );
     
-    s->reset = WIDTH * 6;
+    //s->reset = WIDTH * 6;
     s->count = 4;
     s->xx = rand() % WIDTH;
     s->yy = rand() % HEIGHT;
@@ -214,7 +216,7 @@ static void testscr_update( testscr_t* s )
   s->sprite2->x = ( width - s->xx ) - s->image->width / 2;
   s->sprite2->y = ( height - s->yy ) - s->image->height / 2;
     
-  if ( --s->count == 0 )
+  if ( 0 && --s->count == 0 )
   {
     int pitch = width + RL_BACKGRND_MARGIN;
     int i;
@@ -254,6 +256,19 @@ static void testscr_update( testscr_t* s )
     }
     
     fb[ ( height / 2 ) * pitch + width / 2 ] = ( rand() & 0x0f ) << 12 | ( rand() & 0x1f ) << 6 | ( rand() & 0x0f ) << 1;
+  }
+  else
+  {
+    int x0 = ( ( s->xx / 4 ) & ( tile_x_png_width - 1 ) ) - tile_x_png_width;
+    int y0 = ( ( s->yy / 4 ) & ( tile_x_png_height - 1 ) ) - tile_x_png_height;
+    
+    for ( int y = y0; y < height; y += tile_x_png_height )
+    {
+      for ( int x = x0; x < width; x += tile_x_png_width )
+      {
+        rl_tile_blit_nobg( tile_x_png_width, tile_x_png_height, tile_x_png, x, y );
+      }
+    }
   }
 }
 
