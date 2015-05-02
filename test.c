@@ -431,7 +431,7 @@ void retro_run()
   video_cb( fb, width, height, ( width + RL_BACKGRND_MARGIN ) * sizeof( uint16_t ) );
   rl_sprites_end();
   
-  audio_cb( rl_sound_mix(), RL_SAMPLES_PER_SEC );
+  audio_cb( rl_sound_mix(), RL_SAMPLES_PER_FRAME );
 }
 
 void retro_deinit()
