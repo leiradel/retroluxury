@@ -23,7 +23,7 @@ rl_tileset_t* rl_tileset_create( const void* data, size_t size )
   
   size -= 3 * sizeof( uint16_t );
   
-  rl_tileset_t* tileset = (rl_tileset_t*)rl_malloc( size );
+  rl_tileset_t* tileset = (rl_tileset_t*)rl_malloc( sizeof( rl_tileset_t ) + size );
   
   if ( tileset )
   {
@@ -32,9 +32,9 @@ rl_tileset_t* rl_tileset_create( const void* data, size_t size )
     tileset->size      = width * height;
     tileset->num_tiles = num_tiles;
     
-    uint16_t* restrict pixel = (uint16_t*)( (uint8_t*)tileset + sizeof( *tileset ) );
+    uint16_t* restrict pixel = (uint16_t*)( (uint8_t*)tileset + sizeof( rl_tileset_t ) );
     
-    const uint16_t* restrict end = pixel + size;
+    const uint16_t* restrict end = pixel + size / 2;
     
     while ( pixel < end )
     {
