@@ -31,7 +31,7 @@ value must be used when rle-encoding images with rlrle.lua.
 
 /* The number of userdata entries in other structures. */
 #ifndef RL_USERDATA_COUNT
-#define RL_USERDATA_COUNT 4
+#define RL_USERDATA_COUNT 2
 #endif
 
 #endif /* RL_CONFIG_H */
