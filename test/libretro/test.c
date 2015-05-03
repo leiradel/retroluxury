@@ -9,12 +9,14 @@
 #include <rl_image.h>
 #include <rl_sprite.h>
 #include <rl_sound.h>
-#include <rl_tile.h>
+#include <rl_map.h>
+#include <rl_version.h>
 
 #include <button_x.h>
 #include <tick.h>
 #include <sketch008.h>
 #include <tile_x.h>
+#include <city.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -99,6 +101,7 @@ typedef struct
   rl_sprite_t* sprite;
   rl_sprite_t* sprite2;
   rl_sound_t*  sound;
+  rl_map_t*    map;
   
   int xx, yy, dx, dy, count, reset;
 }
@@ -149,8 +152,20 @@ static int testscr_init( testscr_t* s )
     return -1;
   }
   
+  s->map = rl_map_create( city_map, city_map_len );
+  
+  if ( !s->map )
+  {
+    rl_sound_destroy( s->sound );
+    rl_sprite_destroy( s->sprite2 );
+    rl_sprite_destroy( s->sprite );
+    rl_image_destroy( s->image );
+    return -1;
+  }
+  
   if ( rl_backgrnd_create( WIDTH, HEIGHT ) )
   {
+    rl_map_destroy( s->map );
     rl_sound_destroy( s->sound );
     rl_sprite_destroy( s->sprite2 );
     rl_sprite_destroy( s->sprite );
@@ -257,7 +272,7 @@ static void testscr_update( testscr_t* s )
     
     fb[ ( height / 2 ) * pitch + width / 2 ] = ( rand() & 0x0f ) << 12 | ( rand() & 0x1f ) << 6 | ( rand() & 0x0f ) << 1;
   }
-  else
+  else if ( 0 )
   {
     int x0 = ( ( s->xx / 4 ) & ( tile_x_png_width - 1 ) ) - tile_x_png_width;
     int y0 = ( ( s->yy / 4 ) & ( tile_x_png_height - 1 ) ) - tile_x_png_height;
@@ -270,6 +285,10 @@ static void testscr_update( testscr_t* s )
       }
     }
   }
+  else
+  {
+    rl_map_render_layer( s->map, 0, s->xx, s->yy );
+  }
 }
 
 static testscr_t testscr;
@@ -278,8 +297,6 @@ static testscr_t testscr;
 
 void retro_get_system_info( struct retro_system_info* info )
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %p )\n", __FUNCTION__, info );
-  
   info->library_name = "Retro Luxury";
   info->library_version = "1.0";
   info->need_fullpath = false;
@@ -289,8 +306,6 @@ void retro_get_system_info( struct retro_system_info* info )
 
 void retro_set_environment( retro_environment_t cb )
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %p )\n", __FUNCTION__, cb );
-  
   env_cb = cb;
   
   static const struct retro_variable vars[] = {
@@ -316,14 +331,11 @@ void retro_set_environment( retro_environment_t cb )
 
 unsigned retro_api_version()
 {
-  log_cb( RETRO_LOG_DEBUG, "%s()\n", __FUNCTION__ );
   return RETRO_API_VERSION;
 }
 
 void retro_init()
 {
-  log_cb( RETRO_LOG_DEBUG, "%s()\n", __FUNCTION__ );
-  
   struct retro_log_callback log;
   
   if ( env_cb( RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log ) )
@@ -339,10 +351,11 @@ void retro_init()
 }
 
 void* constcast( const void* ptr );
+extern const char* gitbanner;
 
 bool retro_load_game( const struct retro_game_info* info )
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %p )\n", __FUNCTION__, info );
+  log_cb( RETRO_LOG_ERROR, "\n%s", rl_gitstamp );
   
   if ( !perf_cb.get_time_usec )
   {
@@ -372,49 +385,43 @@ bool retro_load_game( const struct retro_game_info* info )
 
 size_t retro_get_memory_size( unsigned id )
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %u )\n", __FUNCTION__, id );
+  (void)id;
   return 0;
 }
 
 void* retro_get_memory_data( unsigned id )
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %u )\n", __FUNCTION__, id );
+  (void)id;
   return NULL;
 }
 
 void retro_set_video_refresh( retro_video_refresh_t cb )
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %p )\n", __FUNCTION__, cb );
   video_cb = cb;
 }
 
 void retro_set_audio_sample( retro_audio_sample_t cb )
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %p )\n", __FUNCTION__, cb );
+  (void)cb;
 }
 
 void retro_set_audio_sample_batch( retro_audio_sample_batch_t cb )
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %p )\n", __FUNCTION__, cb );
   audio_cb = cb;
 }
 
 void retro_set_input_state( retro_input_state_t cb )
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %p )\n", __FUNCTION__, cb );
   input_state_cb = cb;
 }
 
 void retro_set_input_poll( retro_input_poll_t cb )
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %p )\n", __FUNCTION__, cb );
   input_poll_cb = cb;
 }
 
 void retro_get_system_av_info( struct retro_system_av_info* info )
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %p )\n", __FUNCTION__, info );
-  
   info->geometry.base_width = WIDTH;
   info->geometry.base_height = HEIGHT;
   info->geometry.max_width = WIDTH;
@@ -422,15 +429,6 @@ void retro_get_system_av_info( struct retro_system_av_info* info )
   info->geometry.aspect_ratio = 0.0f;
   info->timing.fps = 60.0;
   info->timing.sample_rate = 44100.0;
-  
-  log_cb( RETRO_LOG_INFO, "Set retro_system_av_info to:\n" );
-  log_cb( RETRO_LOG_INFO, "  base_width   = %u\n", info->geometry.base_width );
-  log_cb( RETRO_LOG_INFO, "  base_height  = %u\n", info->geometry.base_height );
-  log_cb( RETRO_LOG_INFO, "  max_width    = %u\n", info->geometry.max_width );
-  log_cb( RETRO_LOG_INFO, "  max_height   = %u\n", info->geometry.max_height );
-  log_cb( RETRO_LOG_INFO, "  aspect_ratio = %f\n", info->geometry.aspect_ratio );
-  log_cb( RETRO_LOG_INFO, "  fps          = %f\n", info->timing.fps );
-  log_cb( RETRO_LOG_INFO, "  sample_rate  = %f\n", info->timing.sample_rate );
 }
 
 void retro_run()
@@ -458,18 +456,14 @@ void retro_deinit()
 
 void retro_set_controller_port_device( unsigned port, unsigned device )
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %u, %u )\n", __FUNCTION__, port, device );
-  
-  switch (device)
+  switch ( device )
   {
   default:
-    log_cb( RETRO_LOG_WARN, "Unknown device 0x%04x\n", device );
     device = RETRO_DEVICE_JOYPAD;
     // fallthrough
     
   case RETRO_DEVICE_JOYPAD:
     input_devices[ port ] = device;
-    log_cb( RETRO_LOG_INFO, "Device in port %u set to 0x%04x\n", port, device );
     break;
   }
 }
@@ -480,46 +474,48 @@ void retro_reset()
 
 size_t retro_serialize_size()
 {
-  log_cb( RETRO_LOG_DEBUG, "%s()\n", __FUNCTION__ );
   return 0;
 }
 
 bool retro_serialize( void* data, size_t size )
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %p, %u )\n", __FUNCTION__, data, size );
+  (void)data;
+  (void)size;
   return false;
 }
 
 bool retro_unserialize( const void* data, size_t size )
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %p, %u )\n", __FUNCTION__, data, size );
+  (void)data;
+  (void)size;
   return false;
 }
 
 void retro_cheat_reset()
 {
-  log_cb( RETRO_LOG_DEBUG, "%s()\n", __FUNCTION__ );
 }
 
 void retro_cheat_set( unsigned a, bool b, const char* c )
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %u, %s, \"%s\" )\n", __FUNCTION__, a, b ? "true" : "false", c );
+  (void)a;
+  (void)b;
+  (void)c;
 }
 
 bool retro_load_game_special(unsigned a, const struct retro_game_info* b, size_t c)
 {
-  log_cb( RETRO_LOG_DEBUG, "%s( %u, %p, %u )\n", __FUNCTION__, a, b, c );
+  (void)a;
+  (void)b;
+  (void)c;
   return false;
 }
 
 void retro_unload_game()
 {
-  log_cb( RETRO_LOG_DEBUG, "%s()\n", __FUNCTION__ );
   testscr_destroy( &testscr );
 }
 
 unsigned retro_get_region()
 {
-  log_cb( RETRO_LOG_DEBUG, "%s()\n", __FUNCTION__ );
   return RETRO_REGION_NTSC;
 }
