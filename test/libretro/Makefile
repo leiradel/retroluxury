@@ -25,7 +25,7 @@ HEADERS=button_x.h sketch008.h tick.h tile_x.h city.h
 
 all: test.dll
 
-test.dll: $(OBJS)
+test.dll: $(OBJS) ../../src/libretroluxury.a
 	gcc -shared $(LDFLAGS) -o $@ $+ $(LIBS)
 
 test.o: $(HEADERS)

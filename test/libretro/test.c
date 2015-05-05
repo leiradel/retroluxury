@@ -287,7 +287,18 @@ static void testscr_update( testscr_t* s )
   }
   else
   {
-    rl_map_render_layer( s->map, 0, s->xx, s->yy );
+    int map_w = s->map->width * s->map->tileset->width;
+    int map_h = s->map->height * s->map->tileset->height;
+    
+    int max_x = map_w - width - s->map->tileset->width;
+    int max_y = map_h - height - s->map->tileset->height;
+    
+    int x = s->xx * max_x / width;
+    int y = s->yy * max_y / height;
+    
+    rl_map_render_layer( s->map, 0, x, y );
+    rl_sprites_render();
+    rl_map_render_layer( s->map, 1, x, y );
   }
 }
 
@@ -440,9 +451,9 @@ void retro_run()
   int width, height;
   uint16_t* fb = rl_backgrnd_fb( &width, &height );
   
-  rl_sprites_begin();
+  //rl_sprites_begin();
   video_cb( fb, width, height, ( width + RL_BACKGRND_MARGIN ) * sizeof( uint16_t ) );
-  rl_sprites_end();
+  //rl_sprites_end();
   
   audio_cb( rl_sound_mix(), RL_SAMPLES_PER_FRAME );
 }
