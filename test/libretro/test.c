@@ -78,23 +78,6 @@ static bool input_state[ MAX_PADS ][ sizeof( input_descriptors ) / sizeof( input
 
 /*---------------------------------------------------------------------------*/
 
-void* rl_malloc( size_t size )
-{
-  return malloc( size );
-}
-
-void* rl_realloc( void* pointer, size_t size )
-{
-  return realloc( pointer, size );
-}
-
-void rl_free( void* pointer )
-{
-  free( pointer );
-}
-
-/*---------------------------------------------------------------------------*/
-
 typedef struct
 {
   rl_image_t*  image;
@@ -110,7 +93,7 @@ testscr_t;
 static int testscr_init( testscr_t* s )
 {
   rl_sound_init();
-  rl_sound_done();
+  rl_sprite_init();
   
   s->image = rl_image_create( button_x_rle, button_x_rle_len );
   
@@ -199,10 +182,14 @@ static void testscr_update( testscr_t* s )
     
     //s->reset = WIDTH * 6;
     s->count = 4;
-    s->xx = rand() % WIDTH;
-    s->yy = rand() % HEIGHT;
-    s->dx = ( rand() & 1 ) * 2 - 1;
-    s->dy = ( rand() & 1 ) * 2 - 1;
+    // s->xx = rand() % WIDTH;
+    // s->yy = rand() % HEIGHT;
+    // s->dx = ( rand() & 1 ) * 2 - 1;
+    // s->dy = ( rand() & 1 ) * 2 - 1;
+    s->xx = 123;
+    s->yy = 73;
+    s->dx = 1;
+    s->dy = -1;
   }
   
   int width, height;
