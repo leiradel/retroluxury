@@ -1,7 +1,7 @@
 local image = require 'image'
 local path = require 'path'
 
-local _, rleimage = loadfile( 'etc/rlrle.lua' )()
+local rleimage
 
 local xml = [===[
 local function prettyPrint( node, file, ident )
@@ -520,6 +520,12 @@ Commands:
 ]]
 
     return 0
+  end
+  
+  do
+    local dir, _, _ = path.split( path.realpath( args[ 0 ] ) )
+    local ok
+    ok, rleimage = loadfile( dir .. path.separator .. 'rlrle.lua' )()
   end
   
   local filename = path.realpath( args[ 1 ] )
