@@ -284,7 +284,7 @@ static void testscr_update( testscr_t* s )
     int y = s->yy * max_y / height;
     
     rl_map_render_layer( s->map, 0, x, y );
-    rl_sprites_render();
+    rl_sprites_blit_nobg();
     rl_map_render_layer( s->map, 1, x, y );
   }
 }
