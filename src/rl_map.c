@@ -137,7 +137,7 @@ void rl_map_destroy( const rl_map_t* map )
   destroy( map );
 }
 
-static void render_layer0( const rl_map_t* map, int x, int y )
+void rl_map_blit0_nobg( const rl_map_t* map, int x, int y )
 {
   int bg_width, bg_height;
   rl_backgrnd_fb( &bg_width, &bg_height );
@@ -172,7 +172,7 @@ static void render_layer0( const rl_map_t* map, int x, int y )
   }
 }
 
-static void render_layern( const rl_map_t* map, int index, int x, int y )
+void rl_map_blitn_nobg( const rl_map_t* map, int index, int x, int y )
 {
   int bg_width, bg_height;
   rl_backgrnd_fb( &bg_width, &bg_height );
@@ -209,17 +209,5 @@ static void render_layern( const rl_map_t* map, int index, int x, int y )
     }
     
     ndx = next;
-  }
-}
-
-void rl_map_render_layer( const rl_map_t* map, int index, int x, int y )
-{
-  if ( index )
-  {
-    render_layern( map, index, x, y );
-  }
-  else
-  {
-    render_layer0( map, x, y );
   }
 }
