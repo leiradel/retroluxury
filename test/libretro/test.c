@@ -13,6 +13,7 @@
 #include <rl_version.h>
 
 #include <button_x.h>
+#include <block.h>
 #include <tick.h>
 #include <sketch008.h>
 #include <tile_x.h>
@@ -83,6 +84,7 @@ static bool input_state[ MAX_PADS ][ sizeof( input_descriptors ) / sizeof( input
 typedef struct
 {
   rl_image_t*    image;
+  rl_image_t*    block;
   rl_sprite_t*   sprite;
   rl_sprite_t*   sprite2;
   rl_sound_t*    sound;
@@ -90,7 +92,8 @@ typedef struct
   rl_imageset_t* imageset;
   rl_map_t*      map;
   
-  int xx, yy, dx, dy, count, reset;
+  float xx, yy, dx, dy;
+  int count, reset;
 }
 testscr_t;
 
@@ -107,13 +110,22 @@ static int testscr_init( testscr_t* s )
     return -1;
   }
   
+  s->block = rl_image_create( block_rle, block_rle_len );
+  
+  if ( !s->block )
+  {
+  error100:
+    rl_image_destroy( s->image );
+    goto error0;
+  }
+  
   s->sprite = rl_sprite_create();
   
   if ( !s->sprite )
   {
   error1:
-    rl_image_destroy( s->image );
-    goto error0;
+    rl_image_destroy( s->block );
+    goto error100;
   }
   
   s->sprite->image = s->image;
@@ -191,6 +203,7 @@ static void testscr_destroy( testscr_t* s )
   rl_sound_destroy( s->sound );
   rl_sprite_destroy( s->sprite2 );
   rl_sprite_destroy( s->sprite );
+  rl_image_destroy( s->block );
   rl_image_destroy( s->image );
   rl_sound_done();
 }
@@ -207,10 +220,10 @@ static void testscr_update( testscr_t* s )
     // s->yy = rand() % HEIGHT;
     // s->dx = ( rand() & 1 ) * 2 - 1;
     // s->dy = ( rand() & 1 ) * 2 - 1;
-    s->xx = 123;
-    s->yy = 73;
-    s->dx = 1;
-    s->dy = -1;
+    s->xx = 123.0f;
+    s->yy = 73.0f;
+    s->dx = 0.25f;
+    s->dy = -0.25f;
   }
   
   int width, height;
@@ -280,19 +293,6 @@ static void testscr_update( testscr_t* s )
     
     fb[ ( height / 2 ) * pitch + width / 2 ] = ( rand() & 0x0f ) << 12 | ( rand() & 0x1f ) << 6 | ( rand() & 0x0f ) << 1;
   }
-  else if ( 0 )
-  {
-    int x0 = ( ( s->xx / 4 ) & ( tile_x_png_width - 1 ) ) - tile_x_png_width;
-    int y0 = ( ( s->yy / 4 ) & ( tile_x_png_height - 1 ) ) - tile_x_png_height;
-    
-    for ( int y = y0; y < height; y += tile_x_png_height )
-    {
-      for ( int x = x0; x < width; x += tile_x_png_width )
-      {
-        rl_tile_blit_nobg( tile_x_png_width, tile_x_png_height, tile_x_png, x, y );
-      }
-    }
-  }
   else
   {
     int map_w = s->map->width * s->map->tileset->width;
@@ -307,6 +307,41 @@ static void testscr_update( testscr_t* s )
     rl_map_blit0_nobg( s->map, x, y );
     rl_sprites_blit_nobg();
     rl_map_blitn_nobg( s->map, 1, x, y );
+    
+    {
+      int bg_width, bg_height;
+      rl_backgrnd_fb( &bg_width, &bg_height );
+      
+      int ts_width  = s->map->tileset->width;
+      int ts_height = s->map->tileset->height;
+      
+      int dx = -( x % ts_width );
+      int dy = -( y % ts_height );
+      
+      int max_x = dx + bg_width + ts_width;
+      int max_y = dy + bg_height + ts_height;
+      
+      x /= ts_width;
+      y /= ts_height;
+      
+      int pitch = s->map->width;
+      int ndx = y * pitch + x;
+      
+      for ( y = dy; y < max_y; y += ts_height )
+      {
+        int next = ndx + pitch;
+        
+        for ( x = dx; x < max_x; x += ts_width, ndx++ )
+        {
+          if ( s->map->collision[ ndx / 32 ] & ( 1 << ( ndx & 31 ) ) )
+          {
+            rl_image_blit_nobg( s->block, x, y );
+          }
+        }
+        
+        ndx = next;
+      }
+    }
   }
 }
 

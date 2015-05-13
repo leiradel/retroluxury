@@ -6,7 +6,7 @@ LDFLAGS=-m32 -L../../src
 LIBS=-lretroluxury
 
 OBJS=test.o
-HEADERS=button_x.h sketch008.h tick.h tile_x.h city_tls.h city_ims.h city_map.h
+HEADERS=button_x.h block.h sketch008.h tick.h tile_x.h city_tls.h city_ims.h city_map.h
 
 %.o: %.c
 	gcc $(CFLAGS) -c $< -o $@
@@ -40,6 +40,11 @@ button_x.rle: button_x.png
 	../../etc/luai/luai ../../etc/rlrle.lua --margin 32 $<
 
 button_x.h: button_x.rle
+
+block.rle: block.png
+	../../etc/luai/luai ../../etc/rlrle.lua --margin 32 $<
+
+block.h: block.rle
 
 sketch008.h: sketch008.ogg
 
