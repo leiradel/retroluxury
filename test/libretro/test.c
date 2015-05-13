@@ -16,7 +16,9 @@
 #include <tick.h>
 #include <sketch008.h>
 #include <tile_x.h>
-#include <city.h>
+#include <city_tls.h>
+#include <city_ims.h>
+#include <city_map.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -80,11 +82,13 @@ static bool input_state[ MAX_PADS ][ sizeof( input_descriptors ) / sizeof( input
 
 typedef struct
 {
-  rl_image_t*  image;
-  rl_sprite_t* sprite;
-  rl_sprite_t* sprite2;
-  rl_sound_t*  sound;
-  rl_map_t*    map;
+  rl_image_t*    image;
+  rl_sprite_t*   sprite;
+  rl_sprite_t*   sprite2;
+  rl_sound_t*    sound;
+  rl_tileset_t*  tileset;
+  rl_imageset_t* imageset;
+  rl_map_t*      map;
   
   int xx, yy, dx, dy, count, reset;
 }
@@ -99,6 +103,7 @@ static int testscr_init( testscr_t* s )
   
   if ( !s->image )
   {
+  error0:
     return -1;
   }
   
@@ -106,8 +111,9 @@ static int testscr_init( testscr_t* s )
   
   if ( !s->sprite )
   {
+  error1:
     rl_image_destroy( s->image );
-    return -1;
+    goto error0;
   }
   
   s->sprite->image = s->image;
@@ -117,9 +123,9 @@ static int testscr_init( testscr_t* s )
   
   if ( !s->sprite2 )
   {
+  error2:
     rl_sprite_destroy( s->sprite );
-    rl_image_destroy( s->image );
-    return -1;
+    goto error1;
   }
   
   s->sprite2->image = s->image;
@@ -129,31 +135,43 @@ static int testscr_init( testscr_t* s )
   
   if ( !s->sound )
   {
+  error3:
     rl_sprite_destroy( s->sprite2 );
-    rl_sprite_destroy( s->sprite );
-    rl_image_destroy( s->image );
-    return -1;
+    goto error2;
   }
   
-  s->map = rl_map_create( city_map, city_map_len );
+  s->tileset = rl_tileset_create( city_tls_tls, city_tls_tls_len );
+  
+  if ( !s->tileset )
+  {
+  error4:
+    rl_sound_destroy( s->sound );
+    goto error3;
+  }
+  
+  s->imageset = rl_imageset_create( city_ims_ims, city_ims_ims_len );
+  
+  if ( !s->imageset )
+  {
+  error5:
+    rl_tileset_destroy( s->tileset );
+    goto error4;
+  }
+  
+  s->map = rl_map_create( city_map_map, city_map_map_len, s->tileset, s->imageset );
   
   if ( !s->map )
   {
-    rl_sound_destroy( s->sound );
-    rl_sprite_destroy( s->sprite2 );
-    rl_sprite_destroy( s->sprite );
-    rl_image_destroy( s->image );
-    return -1;
+  error6:
+    rl_imageset_destroy( s->imageset );
+    goto error5;
   }
   
   if ( rl_backgrnd_create( WIDTH, HEIGHT ) )
   {
+  error7:
     rl_map_destroy( s->map );
-    rl_sound_destroy( s->sound );
-    rl_sprite_destroy( s->sprite2 );
-    rl_sprite_destroy( s->sprite );
-    rl_image_destroy( s->image );
-    return -1;
+    goto error6;
   }
   
   srand( perf_cb.get_time_usec() );
@@ -167,6 +185,9 @@ static int testscr_init( testscr_t* s )
 static void testscr_destroy( testscr_t* s )
 {
   rl_backgrnd_destroy();
+  rl_map_destroy( s->map );
+  rl_imageset_destroy( s->imageset );
+  rl_tileset_destroy( s->tileset );
   rl_sound_destroy( s->sound );
   rl_sprite_destroy( s->sprite2 );
   rl_sprite_destroy( s->sprite );
@@ -349,7 +370,7 @@ void retro_init()
 }
 
 void* constcast( const void* ptr );
-extern const char* gitbanner;
+extern const char* rl_gitstamp;
 
 bool retro_load_game( const struct retro_game_info* info )
 {

@@ -1,12 +1,12 @@
 INCLUDES=-I. -I../../src
 DEFINES=
 
-CFLAGS=-O3 --std=c99 $(INCLUDES) $(DEFINES)
-LDFLAGS=-L../../src
+CFLAGS=-m32 -O3 --std=c99 $(INCLUDES) $(DEFINES)
+LDFLAGS=-m32 -L../../src
 LIBS=-lretroluxury
 
 OBJS=test.o
-HEADERS=button_x.h sketch008.h tick.h tile_x.h city.h
+HEADERS=button_x.h sketch008.h tick.h tile_x.h city_tls.h city_ims.h city_map.h
 
 %.o: %.c
 	gcc $(CFLAGS) -c $< -o $@
@@ -18,6 +18,12 @@ HEADERS=button_x.h sketch008.h tick.h tile_x.h city.h
 	xxd -i $< | sed "s/unsigned/const unsigned/g" > $@
 
 %.h: %.pcm
+	xxd -i $< | sed "s/unsigned/const unsigned/g" > $@
+
+%.h: %.tls
+	xxd -i $< | sed "s/unsigned/const unsigned/g" > $@
+
+%.h: %.ims
 	xxd -i $< | sed "s/unsigned/const unsigned/g" > $@
 
 %.h: %.map

@@ -1,7 +1,7 @@
 INCLUDES=-I.
-DEFINES=-DGITHASH=\"`git rev-parse HEAD`\"
+DEFINES=
 
-CFLAGS=-O3 --std=c99 $(INCLUDES) $(DEFINES)
+CFLAGS=-m32 -O3 --std=c99 $(INCLUDES) $(DEFINES)
 
 OBJS=rl_backgrnd.o rl_image.o rl_map.o rl_sound.o rl_sprite.o rl_tile.o rl_version.o
 

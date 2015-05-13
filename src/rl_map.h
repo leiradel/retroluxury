@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#define RL_MAP_HAS_COLLISION 1
+
 typedef struct
 {
   uint16_t indices[ 0 ]; /* width * height *tile* indices */
@@ -24,16 +26,18 @@ typedef struct
   int width;
   int height;
   int num_layers;
+  int flags;
   
   const rl_tileset_t*  tileset;
   const rl_imageset_t* imageset;
+  const uint32_t*      collision;
   const rl_layer0_t*   layer0;
   
   rl_layern_t* layers[ 0 ];
 }
 rl_map_t;
 
-rl_map_t* rl_map_create( const void* data, size_t size );
+rl_map_t* rl_map_create( const void* data, size_t size, const rl_tileset_t* tileset, const rl_imageset_t* imageset );
 void      rl_map_destroy( const rl_map_t* map );
 
 void rl_map_blit0_nobg( const rl_map_t* map, int x, int y );

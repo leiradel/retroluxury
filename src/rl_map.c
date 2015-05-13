@@ -48,7 +48,7 @@ static void* alloc_zero( size_t size )
   return ptr;
 }
 
-rl_map_t* rl_map_create( const void* data, size_t size )
+rl_map_t* rl_map_create( const void* data, size_t size, const rl_tileset_t* tileset, const rl_imageset_t* imageset )
 {
   union
   {
@@ -64,6 +64,7 @@ rl_map_t* rl_map_create( const void* data, size_t size )
   int width      = ne16( *ptr.u16++ );
   int height     = ne16( *ptr.u16++ );
   int num_layers = ne16( *ptr.u16++ );
+  int flags      = ne16( *ptr.u16++ );
   
   rl_map_t* map = (rl_map_t*)alloc_zero( sizeof( rl_map_t ) + ( num_layers - 1 ) * sizeof( rl_layern_t ) );
   
@@ -72,29 +73,12 @@ rl_map_t* rl_map_create( const void* data, size_t size )
     return NULL;
   }
   
-  map->width = width;
-  map->height = height;
+  map->width      = width;
+  map->height     = height;
   map->num_layers = num_layers;
-  
-  size_t tileset_size = ne32( *ptr.u32++ );
-  map->tileset = rl_tileset_create( ptr.v, tileset_size );
-  
-  if ( !map->tileset )
-  {
-    return destroy( map );
-  }
-  
-  ptr.u8 += tileset_size;
-  
-  size_t imageset_size = ne32( *ptr.u32++ );
-  map->imageset = rl_imageset_create( ptr.v, imageset_size );
-  
-  if ( !map->imageset )
-  {
-    return destroy( map );
-  }
-  
-  ptr.u8 += imageset_size;
+  map->flags      = flags;
+  map->tileset    = tileset;
+  map->imageset   = imageset;
   
   map->layer0 = (rl_layer0_t*)alloc_zero( width * height * sizeof( uint16_t ) );
   
