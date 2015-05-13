@@ -113,6 +113,22 @@ rl_map_t* rl_map_create( const void* data, size_t size, const rl_tileset_t* tile
     }
   }
   
+  int numqw = ( width * height + 31 ) / 32;
+  uint32_t* restrict collision = (uint32_t*)rl_malloc( numqw * sizeof( uint32_t ) );
+  
+  if ( !collision )
+  {
+    return destroy( map );
+  }
+  
+  map->collision = collision;
+  const uint32_t* restrict coll_end = collision + numqw;
+  
+  while ( collision < coll_end )
+  {
+    *collision++ = ne32( *ptr.u32++ );
+  }
+  
   return map;
 }
 

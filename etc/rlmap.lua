@@ -579,27 +579,21 @@ local function compile_cmd( args )
       end
     end
     
+    -- collision bits
     if coll then
-      -- collision bits
       local bits, bit = 0, 1
       
       for y = 1, map.height do
         for x = 1, map.width do
-          local blocked = false
-          
           for i = 1, #coll do
             for _, layer in ipairs( map.layers ) do
               if layer.name == coll[ i ] then
-                if layer.tiles[ y ][ x ] then
-                  blocked = true
+                if layer.tiles[ y ][ x ] ~= 0 then
+                  bits = bits | bit
                   break
                 end
               end
             end
-          end
-          
-          if blocked then
-            bits = bits | bit
           end
           
           if bit == 0x80000000 then
