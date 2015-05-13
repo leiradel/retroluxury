@@ -124,7 +124,7 @@ Stops all sounds and releases all memory used by the sound system.
 
 * `rl_sound_t* rl_sound_create( const void* data, size_t size, int stereo )`
 
-Creates a sound from the given data. The data is just `size / 2` signed 16-bit PCM data. If `stereo` is `true`, the sound is stereo and data is [Interleave](http://en.wikipedia.org/wiki/Interleave_sequence), with 16-bits for the left channel followed by 16-bits for the right channel and so forth: LRLRLR...
+Creates a sound from the given data. The data is just `size / 2` signed 16-bit PCM data. If `stereo` is `true`, the sound is stereo and data is [interleaved](http://en.wikipedia.org/wiki/Interleave_sequence), with 16-bits for the left channel followed by 16-bits for the right channel and so forth: LRLRLR...
 
 * `rl_sound_destroy( sound )` (macro)
 
