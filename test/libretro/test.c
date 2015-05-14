@@ -10,6 +10,7 @@
 #include <rl_sprite.h>
 #include <rl_sound.h>
 #include <rl_map.h>
+#include <rl_rand.h>
 #include <rl_version.h>
 
 #include <button_x.h>
@@ -186,7 +187,7 @@ static int testscr_init( testscr_t* s )
     goto error6;
   }
   
-  srand( perf_cb.get_time_usec() );
+  rl_srand( perf_cb.get_time_usec() );
   
   s->reset = 0;
   rl_sound_play_ogg( sketch008_ogg, sketch008_ogg_len, 1, NULL );
@@ -216,10 +217,10 @@ static void testscr_update( testscr_t* s )
     
     //s->reset = WIDTH * 6;
     s->count = 4;
-    // s->xx = rand() % WIDTH;
-    // s->yy = rand() % HEIGHT;
-    // s->dx = ( rand() & 1 ) * 2 - 1;
-    // s->dy = ( rand() & 1 ) * 2 - 1;
+    // s->xx = rl_random( 0, WIDTH - 1 );
+    // s->yy = rl_random( 0, HEIGHT - 1 );
+    // s->dx = ( rl_rand() & 1 ) * 2 - 1;
+    // s->dy = ( rl_rand() & 1 ) * 2 - 1;
     s->xx = 123.0f;
     s->yy = 73.0f;
     s->dx = 0.25f;
@@ -291,7 +292,7 @@ static void testscr_update( testscr_t* s )
       }
     }
     
-    fb[ ( height / 2 ) * pitch + width / 2 ] = ( rand() & 0x0f ) << 12 | ( rand() & 0x1f ) << 6 | ( rand() & 0x0f ) << 1;
+    fb[ ( height / 2 ) * pitch + width / 2 ] = ( rl_rand() & 0x0f ) << 12 | ( rl_rand() & 0x1f ) << 6 | ( rl_rand() & 0x0f ) << 1;
   }
   else
   {
