@@ -57,4 +57,4 @@ tile_x.h: tile_x.png
 	../../etc/luai/luai ../../etc/rltile.lua $<
 
 clean:
-	rm -rf test.dll button_x.rle tick.pcm $(OBJS) $(HEADERS)
+	rm -rf test.dll button_x.rle block.rle tick.pcm $(OBJS) $(HEADERS)
