@@ -20,16 +20,6 @@ static rl_map_t* destroy( const rl_map_t* map )
       rl_free( (void*)map->layer0 );
     }
     
-    if ( map->imageset )
-    {
-      rl_imageset_destroy( (void*)map->imageset );
-    }
-    
-    if ( map->tileset )
-    {
-      rl_tileset_destroy( (void*)map->tileset );
-    }
-    
     rl_free( (void*)map );
   }
   
@@ -66,7 +56,7 @@ rl_map_t* rl_map_create( const void* data, size_t size, const rl_tileset_t* tile
   int num_layers = ne16( *ptr.u16++ );
   int flags      = ne16( *ptr.u16++ );
   
-  rl_map_t* map = (rl_map_t*)alloc_zero( sizeof( rl_map_t ) + ( num_layers - 1 ) * sizeof( rl_layern_t ) );
+  rl_map_t* map = (rl_map_t*)alloc_zero( sizeof( rl_map_t ) + ( num_layers - 1 ) * sizeof( rl_layern_t* ) );
   
   if ( !map )
   {
