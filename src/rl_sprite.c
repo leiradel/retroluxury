@@ -11,11 +11,9 @@ typedef struct
 }
 spt_t;
 
-static spt_t     sprites[ RL_MAX_SPRITES + 1 ];
-static uint16_t  saved_backgrnd[ RL_BG_SAVE_SIZE ];
-static uint16_t* saved_ptr;
-static int       num_sprites, num_visible;
-static int       x0, y0;
+static spt_t sprites[ RL_MAX_SPRITES + 1 ];
+static int   num_sprites, num_visible;
+static int   x0, y0;
 
 void rl_sprite_init( void )
 {
@@ -138,8 +136,8 @@ void rl_sprites_blit( void )
   guard.flags = RL_SPRITE_UNUSED;
   sprites[ num_sprites ].sprite = &guard; /* guard */
   
-  sptptr    = sprites;
-  saved_ptr = saved_backgrnd;
+  sptptr = sprites;
+  uint16_t* saved_ptr = rl_backgrnd_get_bgptr();
   
   /* Iterate over active and visible sprites and blit them */
   /* flags & 0x0007U == 0 */
@@ -168,6 +166,7 @@ void rl_sprites_blit( void )
   }
   
   num_sprites = sptptr - sprites;
+  rl_backgrnd_set_bgptr( saved_ptr );
 }
 
 void rl_sprites_unblit( void )

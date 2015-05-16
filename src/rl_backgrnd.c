@@ -4,8 +4,11 @@
 #include <rl_config.h>
 
 static uint16_t* pixels;
-static int width, height;
+static int       width, height;
 static uint16_t* fb;
+
+static uint16_t  saved_backgrnd[ RL_BG_SAVE_SIZE ];
+static uint16_t* saved_ptr;
 
 int rl_backgrnd_create( int w, int h )
 {
@@ -16,6 +19,8 @@ int rl_backgrnd_create( int w, int h )
     width  = w;
     height = h;
     fb     = (uint16_t*)pixels + RL_BACKGRND_MARGIN;
+    
+    saved_ptr = saved_backgrnd;
     
     return 0;
   }
@@ -93,4 +98,14 @@ uint16_t* rl_backgrnd_fb( int* w, int* h )
   }
   
   return fb;
+}
+
+uint16_t* rl_backgrnd_get_bgptr( void )
+{
+  return saved_ptr;
+}
+
+void rl_backgrnd_set_bgptr( uint16_t* bg_ptr )
+{
+  saved_ptr = bg_ptr;
 }

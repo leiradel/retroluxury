@@ -10,4 +10,7 @@ void      rl_backgrnd_clear( uint16_t color );
 void      rl_backgrnd_scroll( int dx, int dy );
 uint16_t* rl_backgrnd_fb( int* width, int* height );
 
+uint16_t* rl_backgrnd_get_bgptr( void );
+void      rl_backgrnd_set_bgptr( uint16_t* bg_ptr );
+
 #endif /* RL_BACKGRND_H */
