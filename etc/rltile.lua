@@ -44,7 +44,7 @@ Usage: luai rltile.lua <image>
   local file, err = io.open( dir .. path.separator .. name .. '.h', 'w' )
   if not file then error( err ) end
   
-  local array = string.gsub( name .. ext, '[%.\\/:]', '_' )
+  local array = string.gsub( name .. ext, '[^a-zA-Z0-9_]', '_' )
   
   file:write( 'const uint16_t ', array, '[] = {\n' )
   
