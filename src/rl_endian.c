@@ -28,3 +28,27 @@ static inline uint32_t ne32( uint32_t x )
     return x;
   }
 }
+
+static inline int isle( void )
+{
+  static const union
+  {
+    uint16_t u16;
+    uint8_t u8[ 2 ];
+  }
+  u = { 1 };
+  
+  return u.u8[ 0 ];
+}
+
+static inline int isbe( void )
+{
+  static const union
+  {
+    uint16_t u16;
+    uint8_t u8[ 2 ];
+  }
+  u = { 1 };
+  
+  return !u.u8[ 0 ];
+}
