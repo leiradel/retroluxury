@@ -11,16 +11,10 @@
 #include <rl_sound.h>
 #include <rl_map.h>
 #include <rl_rand.h>
+#include <rl_pack.h>
 #include <rl_version.h>
 
-#include <button_x.h>
-#include <block.h>
-#include <tick.h>
-#include <sketch008.h>
-#include <tile_x.h>
-#include <city_tls.h>
-#include <city_ims.h>
-#include <city_map.h>
+#include <res.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -103,7 +97,8 @@ static int testscr_init( testscr_t* s )
   rl_sound_init();
   rl_sprite_init();
   
-  s->image = rl_image_create( button_x_rle, button_x_rle_len );
+  rl_entry_t* entry = rl_find_entry( res_pak, "button_x.rle" );
+  s->image = rl_image_create( (char*)res_pak + entry->data_offset, entry->data_size );
   
   if ( !s->image )
   {
@@ -111,7 +106,8 @@ static int testscr_init( testscr_t* s )
     return -1;
   }
   
-  s->block = rl_image_create( block_rle, block_rle_len );
+  entry = rl_find_entry( res_pak, "block.rle" );
+  s->block = rl_image_create( (char*)res_pak + entry->data_offset, entry->data_size );
   
   if ( !s->block )
   {
@@ -144,7 +140,8 @@ static int testscr_init( testscr_t* s )
   s->sprite2->image = s->image;
   s->sprite2->layer = 1;
   
-  s->sound = rl_sound_create( tick_pcm, tick_pcm_len, 0 );
+  entry = rl_find_entry( res_pak, "tick.pcm" );
+  s->sound = rl_sound_create( (char*)res_pak + entry->data_offset, entry->data_size, 0 );
   
   if ( !s->sound )
   {
@@ -153,7 +150,8 @@ static int testscr_init( testscr_t* s )
     goto error2;
   }
   
-  s->tileset = rl_tileset_create( city_tls_tls, city_tls_tls_len );
+  entry = rl_find_entry( res_pak, "city.tls" );
+  s->tileset = rl_tileset_create( (char*)res_pak + entry->data_offset, entry->data_size );
   
   if ( !s->tileset )
   {
@@ -162,7 +160,8 @@ static int testscr_init( testscr_t* s )
     goto error3;
   }
   
-  s->imageset = rl_imageset_create( city_ims_ims, city_ims_ims_len );
+  entry = rl_find_entry( res_pak, "city.ims" );
+  s->imageset = rl_imageset_create( (char*)res_pak + entry->data_offset, entry->data_size );
   
   if ( !s->imageset )
   {
@@ -171,7 +170,8 @@ static int testscr_init( testscr_t* s )
     goto error4;
   }
   
-  s->map = rl_map_create( city_map_map, city_map_map_len, s->tileset, s->imageset );
+  entry = rl_find_entry( res_pak, "city.map" );
+  s->map = rl_map_create( (char*)res_pak + entry->data_offset, entry->data_size, s->tileset, s->imageset );
   
   if ( !s->map )
   {
@@ -190,7 +190,8 @@ static int testscr_init( testscr_t* s )
   rl_srand( perf_cb.get_time_usec() );
   
   s->reset = 0;
-  rl_sound_play_ogg( sketch008_ogg, sketch008_ogg_len, 1, NULL );
+  entry = rl_find_entry( res_pak, "sketch008.ogg" );
+  rl_sound_play_ogg( (char*)res_pak + entry->data_offset, entry->data_size, 1, NULL );
   
   return 0;
 }

@@ -6,28 +6,14 @@ LDFLAGS=-m32 -L../../src
 LIBS=-lretroluxury
 
 OBJS=test.o
-HEADERS=button_x.h block.h sketch008.h tick.h tile_x.h city_tls.h city_ims.h city_map.h
+RES=res/button_x.rle res/block.rle res/sketch008.ogg res/tick.pcm res/city.tls res/city.ims res/city.map
+HEADERS=res.h
 
 %.o: %.c
 	gcc $(CFLAGS) -c $< -o $@
 
-%.h: %.rle
-	xxd -i $< | sed "s/unsigned/const unsigned/g" > $@
-
-%.h: %.ogg
-	xxd -i $< | sed "s/unsigned/const unsigned/g" > $@
-
-%.h: %.pcm
-	xxd -i $< | sed "s/unsigned/const unsigned/g" > $@
-
-%.h: %.tls
-	xxd -i $< | sed "s/unsigned/const unsigned/g" > $@
-
-%.h: %.ims
-	xxd -i $< | sed "s/unsigned/const unsigned/g" > $@
-
-%.h: %.map
-	xxd -i $< | sed "s/unsigned/const unsigned/g" > $@
+%.h: %.pak
+	xxd -i $< > $@
 
 all: test.dll
 
@@ -36,25 +22,17 @@ test.dll: $(OBJS) ../../src/libretroluxury.a
 
 test.o: $(HEADERS)
 
-button_x.rle: button_x.png
+res.pak: $(RES)
+	../../etc/luai/luai ../../etc/rlpack.lua 1 $@ $+
+
+res/button_x.rle: res/button_x.png
 	../../etc/luai/luai ../../etc/rlrle.lua --margin 32 $<
 
-button_x.h: button_x.rle
-
-block.rle: block.png
+res/block.rle: res/block.png
 	../../etc/luai/luai ../../etc/rlrle.lua --margin 32 $<
 
-block.h: block.rle
-
-sketch008.h: sketch008.ogg
-
-tick.h: tick.pcm
-
-tick.pcm: tick.wav
+res/tick.pcm: res/tick.wav
 	sox $< -B -t s16 -c 1 -r 44100 $@
 
-tile_x.h: tile_x.png
-	../../etc/luai/luai ../../etc/rltile.lua $<
-
 clean:
-	rm -rf test.dll button_x.rle block.rle tick.pcm $(OBJS) $(HEADERS)
+	rm -rf test.dll res.pak $(OBJS) $(HEADERS) res/button_x.rle res/block.rle res/tick.pcm
