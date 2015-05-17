@@ -182,5 +182,7 @@ void rl_sprites_unblit( void )
       sptptr--;
     }
     while ( sptptr >= sprites );
+    
+    rl_backgrnd_set_bgptr( sptptr[ 1 ].bg );
   }
 }
