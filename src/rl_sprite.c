@@ -15,6 +15,9 @@ static spt_t sprites[ RL_MAX_SPRITES + 1 ];
 static int   num_sprites, num_visible;
 static int   x0, y0;
 
+static uint16_t  saved_backgrnd[ RL_BG_SAVE_SIZE ];
+static uint16_t* saved_ptr;
+
 void rl_sprite_init( void )
 {
   num_sprites = num_visible = 0;
@@ -137,7 +140,7 @@ void rl_sprites_blit( void )
   sprites[ num_sprites ].sprite = &guard; /* guard */
   
   sptptr = sprites;
-  uint16_t* saved_ptr = rl_backgrnd_get_bgptr();
+  saved_ptr = saved_backgrnd;
   
   /* Iterate over active and visible sprites and blit them */
   /* flags & 0x0007U == 0 */
@@ -166,7 +169,6 @@ void rl_sprites_blit( void )
   }
   
   num_sprites = sptptr - sprites;
-  rl_backgrnd_set_bgptr( saved_ptr );
 }
 
 void rl_sprites_unblit( void )
@@ -182,7 +184,5 @@ void rl_sprites_unblit( void )
       sptptr--;
     }
     while ( sptptr >= sprites );
-    
-    rl_backgrnd_set_bgptr( sptptr[ 1 ].bg );
   }
 }

@@ -7,9 +7,6 @@ static uint16_t* pixels;
 static int       width, height;
 static uint16_t* fb;
 
-static uint16_t  saved_backgrnd[ RL_BG_SAVE_SIZE ];
-static uint16_t* saved_ptr;
-
 int rl_backgrnd_create( int w, int h )
 {
   pixels = (uint16_t*)rl_malloc( ( ( w + RL_BACKGRND_MARGIN ) * h + RL_BACKGRND_MARGIN ) * sizeof( uint16_t ) );
@@ -19,8 +16,6 @@ int rl_backgrnd_create( int w, int h )
     width  = w;
     height = h;
     fb     = (uint16_t*)pixels + RL_BACKGRND_MARGIN;
-    
-    saved_ptr = saved_backgrnd;
     
     return 0;
   }
@@ -98,14 +93,4 @@ uint16_t* rl_backgrnd_fb( int* w, int* h )
   }
   
   return fb;
-}
-
-uint16_t* rl_backgrnd_get_bgptr( void )
-{
-  return saved_ptr;
-}
-
-void rl_backgrnd_set_bgptr( uint16_t* bg_ptr )
-{
-  saved_ptr = bg_ptr;
 }
