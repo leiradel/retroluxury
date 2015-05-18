@@ -139,7 +139,7 @@ void rl_sound_stop( int index )
   
   if ( voice->stop_cb && voice->sound )
   {
-    voice->stop_cb( voice->sound );
+    voice->stop_cb( voice->sound, RL_SOUND_STOPPED );
   }
   
   voice->sound = NULL;
@@ -154,7 +154,7 @@ void rl_sound_stop_all( void )
   {
     if ( voice->stop_cb && voice->sound )
     {
-      voice->stop_cb( voice->sound );
+      voice->stop_cb( voice->sound, RL_SOUND_STOPPED );
     }
     
     voice->sound = NULL;
@@ -228,7 +228,7 @@ void rl_sound_stop_ogg( void )
     
     if ( ogg_stop_cb )
     {
-      ogg_stop_cb( NULL );
+      ogg_stop_cb( NULL, RL_SOUND_STOPPED );
     }
     
     ogg_stream = NULL;
@@ -250,6 +250,11 @@ static void ogg_mix( int32_t* buffer )
       {
         if ( ogg_repeat )
         {
+          if ( ogg_stop_cb )
+          {
+            ogg_stop_cb( NULL, RL_SOUND_REPEATED );
+          }
+          
           stb_vorbis_seek_start( ogg_stream );
           goto again;
         }
@@ -257,7 +262,7 @@ static void ogg_mix( int32_t* buffer )
         {
           if ( ogg_stop_cb )
           {
-            ogg_stop_cb( NULL );
+            ogg_stop_cb( NULL, RL_SOUND_FINISHED );
           }
           
           stb_vorbis_close( ogg_stream );
@@ -316,6 +321,11 @@ again:
       
       if ( voice->repeat )
       {
+        if ( voice->stop_cb )
+        {
+          voice->stop_cb( voice->sound, RL_SOUND_REPEATED );
+        }
+        
         buf_free -= pcm_available;
         voice->position = 0;
         goto again;
@@ -323,7 +333,7 @@ again:
       
       if ( voice->stop_cb )
       {
-        voice->stop_cb( voice->sound );
+        voice->stop_cb( voice->sound, RL_SOUND_FINISHED );
       }
       
       voice->sound = NULL;
@@ -355,6 +365,11 @@ again:
       
       if ( voice->repeat )
       {
+        if ( voice->stop_cb )
+        {
+          voice->stop_cb( voice->sound, RL_SOUND_REPEATED );
+        }
+        
         buf_free -= pcm_available;
         voice->position = 0;
         goto again;
@@ -362,7 +377,7 @@ again:
       
       if ( voice->stop_cb )
       {
-        voice->stop_cb( voice->sound );
+        voice->stop_cb( voice->sound, RL_SOUND_FINISHED );
       }
       
       voice->sound = NULL;

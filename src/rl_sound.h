@@ -9,6 +9,11 @@
 /* Number of 16-bit stereo samples per frame. DO NOT CHANGE! */
 #define RL_SAMPLES_PER_FRAME 735
 
+/* Reasons passed to the stop callback. */
+#define RL_SOUND_FINISHED 0
+#define RL_SOUND_STOPPED  1
+#define RL_SOUND_REPEATED 2
+
 typedef struct
 {
   rl_userdata_t ud;
@@ -18,7 +23,7 @@ typedef struct
 }
 rl_sound_t;
 
-typedef void ( *rl_soundstop_t )( const rl_sound_t* );
+typedef void ( *rl_soundstop_t )( const rl_sound_t*, int reason );
 
 void rl_sound_init( void );
 void rl_sound_done( void );
