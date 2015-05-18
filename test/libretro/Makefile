@@ -1,11 +1,13 @@
-INCLUDES=-I. -I../../src
-DEFINES=
+RL=../../src
+
+INCLUDES=-I. -I$(RL)
+DEFINES=-DRL_BG_SAVE_SIZE=131072
 
 CFLAGS=-m32 -O3 --std=c99 $(INCLUDES) $(DEFINES)
-LDFLAGS=-m32 -L../../src
-LIBS=-lretroluxury
+LDFLAGS=-m32
+LIBS=
 
-OBJS=test.o
+OBJS=test.o $(RL)/rl_backgrnd.o $(RL)/rl_image.o $(RL)/rl_map.o $(RL)/rl_pack.o $(RL)/rl_rand.o $(RL)/rl_sound.o $(RL)/rl_sprite.o $(RL)/rl_tile.o $(RL)/rl_version.o
 RES=res/button_x.rle res/block.rle res/sketch008.ogg res/tick.pcm res/city.tls res/city.ims res/city.map
 HEADERS=res.h
 
@@ -17,7 +19,7 @@ HEADERS=res.h
 
 all: test.dll
 
-test.dll: $(OBJS) ../../src/libretroluxury.a
+test.dll: $(OBJS)
 	gcc -shared $(LDFLAGS) -o $@ $+ $(LIBS)
 
 test.o: $(HEADERS)
