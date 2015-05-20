@@ -214,20 +214,25 @@ static int l_playMusic( lua_State* L )
   
   rl_voice_t* voice = rl_sound_play_ogg( data, size, repeat, sound_stop_cb );
   
-  voice->sound_ref = LUA_NOREF;
-  
-  if ( lua_isnoneornil( L, 3 ) )
+  if ( voice )
   {
-    luaL_checktype( L, 3, LUA_TFUNCTION );
-    lua_pushvalue( L, 3 );
-    voice->stop_cb_ref = luaL_ref( L, LUA_REGISTRYINDEX );
-  }
-  else
-  {
-    voice->stop_cb_ref = LUA_NOREF;
+    voice->sound_ref = LUA_NOREF;
+    
+    if ( lua_isnoneornil( L, 3 ) )
+    {
+      voice->stop_cb_ref = LUA_NOREF;
+    }
+    else
+    {
+      luaL_checktype( L, 3, LUA_TFUNCTION );
+      lua_pushvalue( L, 3 );
+      voice->stop_cb_ref = luaL_ref( L, LUA_REGISTRYINDEX );
+    }
+    
+    return push_voice( L, voice );
   }
   
-  return push_voice( L, voice );
+  return luaL_error( L, "music already playing" );
 }
 
 static int l_getInputState( lua_State* L )
@@ -786,13 +791,13 @@ static int l_sound_play( lua_State* L )
   
   if ( lua_isnoneornil( L, 3 ) )
   {
-    luaL_checktype( L, 3, LUA_TFUNCTION );
-    lua_pushvalue( L, 3 );
-    voice->stop_cb_ref = luaL_ref( L, LUA_REGISTRYINDEX );
+    voice->stop_cb_ref = LUA_NOREF;
   }
   else
   {
-    voice->stop_cb_ref = LUA_NOREF;
+    luaL_checktype( L, 3, LUA_TFUNCTION );
+    lua_pushvalue( L, 3 );
+    voice->stop_cb_ref = luaL_ref( L, LUA_REGISTRYINDEX );
   }
   
   return push_voice( L, voice );

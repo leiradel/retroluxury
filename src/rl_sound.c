@@ -43,12 +43,18 @@ static int16_t audio_buffer[ RL_SAMPLES_PER_FRAME * 2 ];
 static voice_t voices[ RL_MAX_VOICES ];
 
 #ifdef RL_OGG_VORBIS
-static stb_vorbis*      ogg_stream;
-static stb_vorbis_alloc ogg_alloc;
-static int16_t          ogg_pcm[ 4096 ];
-static int              ogg_position;
-static int              ogg_available;
-static voice_t          ogg_voice;
+typedef struct
+{
+  voice_t voice;
+  
+  stb_vorbis*      stream;
+  stb_vorbis_alloc alloc;
+  int16_t          pcm[ 4096 ];
+  int              available;
+}
+oggvoice_t;
+
+static oggvoice_t ogg_voice;
 #endif
 
 void rl_sound_init( void )
@@ -59,17 +65,17 @@ void rl_sound_init( void )
   }
   
 #ifdef RL_OGG_VORBIS
-  ogg_stream = NULL;
+  ogg_voice.stream = NULL;
 #endif
 }
 
 void rl_sound_done( void )
 {
 #ifdef RL_OGG_VORBIS
-  if ( ogg_stream )
+  if ( ogg_voice.stream )
   {
-    stb_vorbis_close( ogg_stream );
-    rl_free( ogg_alloc.alloc_buffer );
+    stb_vorbis_close( ogg_voice.stream );
+    rl_free( ogg_voice.alloc.alloc_buffer );
   }
 #endif
 }
@@ -137,17 +143,17 @@ void rl_sound_stop( rl_voice_t* voice_ )
 {
   voice_t* voice = (voice_t*)voice_;
   
-  if ( voice->stop_cb && ( voice->voice.sound || ogg_stream ) )
+  if ( voice->stop_cb && ( voice->voice.sound || ogg_voice.stream ) )
   {
     voice->stop_cb( voice_, RL_SOUND_STOPPED );
   }
   
-  if ( voice_ == &ogg_voice.voice && ogg_stream )
+  if ( voice_ == &ogg_voice.voice.voice && ogg_voice.stream )
   {
-    stb_vorbis_close( ogg_stream );
-    rl_free( ogg_alloc.alloc_buffer );
+    stb_vorbis_close( ogg_voice.stream );
+    rl_free( ogg_voice.alloc.alloc_buffer );
     
-    ogg_stream = NULL;
+    ogg_voice.stream = NULL;
   }
   
   voice->voice.sound = NULL;
@@ -173,7 +179,7 @@ void rl_sound_stop_all( void )
 #ifdef RL_OGG_VORBIS
 rl_voice_t* rl_sound_play_ogg( const void* data, size_t size, int repeat, rl_soundstop_t stop_cb )
 {
-  if ( !ogg_stream )
+  if ( !ogg_voice.stream )
   {
     // This scheme is failing with a SIGSEGV when the buffer size reaches 128Kb
     // so we just allocate 256Kb for now which seems to work.
@@ -202,83 +208,83 @@ rl_voice_t* rl_sound_play_ogg( const void* data, size_t size, int repeat, rl_sou
     while ( !ogg_stream && res == VORBIS_outofmem );
     */
     
-    ogg_alloc.alloc_buffer = (char*)rl_malloc( 256 * 1024 );
+    ogg_voice.alloc.alloc_buffer = (char*)rl_malloc( 256 * 1024 );
     
-    if ( ogg_alloc.alloc_buffer )
+    if ( ogg_voice.alloc.alloc_buffer )
     {
-      ogg_alloc.alloc_buffer_length_in_bytes = 256 * 1024;
+      ogg_voice.alloc.alloc_buffer_length_in_bytes = 256 * 1024;
       
       int res;
-      ogg_stream = stb_vorbis_open_memory( (const unsigned char*)data, size, &res, &ogg_alloc );
+      ogg_voice.stream = stb_vorbis_open_memory( (const unsigned char*)data, size, &res, &ogg_voice.alloc );
       
-      if ( ogg_stream )
+      if ( ogg_voice.stream )
       {
-        ogg_position = ogg_available = 0;
+        ogg_voice.voice.position = ogg_voice.available = 0;
         
-        ogg_voice.repeat  = repeat;
-        ogg_voice.stop_cb = stop_cb;
+        ogg_voice.voice.repeat  = repeat;
+        ogg_voice.voice.stop_cb = stop_cb;
         
-        return 0;
+        return &ogg_voice.voice.voice;
       }
     
-      rl_free( ogg_alloc.alloc_buffer );
+      rl_free( ogg_voice.alloc.alloc_buffer );
     }
   }
   
-  ogg_stream = NULL;
-  return &ogg_voice.voice;
+  ogg_voice.stream = NULL;
+  return NULL;
 }
 
 static void ogg_mix( int32_t* buffer )
 {
-  if ( ogg_stream )
+  if ( ogg_voice.stream )
   {
     int buf_free = RL_SAMPLES_PER_FRAME * 2;
     
-    if ( ogg_position == ogg_available )
+    if ( ogg_voice.voice.position == ogg_voice.available )
     {
     again:
-      ogg_available = stb_vorbis_get_frame_short_interleaved( ogg_stream, 2, ogg_pcm, sizeof( ogg_pcm ) / sizeof( ogg_pcm[ 0 ] ) );
+      ogg_voice.available = stb_vorbis_get_frame_short_interleaved( ogg_voice.stream, 2, ogg_voice.pcm, sizeof( ogg_voice.pcm ) / sizeof( ogg_voice.pcm[ 0 ] ) );
       
-      if ( !ogg_available )
+      if ( !ogg_voice.available )
       {
-        if ( ogg_voice.repeat )
+        if ( ogg_voice.voice.repeat )
         {
-          if ( ogg_voice.stop_cb )
+          if ( ogg_voice.voice.stop_cb )
           {
-            ogg_voice.stop_cb( &ogg_voice.voice, RL_SOUND_REPEATED );
+            ogg_voice.voice.stop_cb( &ogg_voice.voice.voice, RL_SOUND_REPEATED );
           }
           
-          stb_vorbis_seek_start( ogg_stream );
+          stb_vorbis_seek_start( ogg_voice.stream );
           goto again;
         }
         else
         {
-          if ( ogg_voice.stop_cb )
+          if ( ogg_voice.voice.stop_cb )
           {
-            ogg_voice.stop_cb( &ogg_voice.voice, RL_SOUND_FINISHED );
+            ogg_voice.voice.stop_cb( &ogg_voice.voice.voice, RL_SOUND_FINISHED );
           }
           
-          stb_vorbis_close( ogg_stream );
-          ogg_stream = NULL;
+          stb_vorbis_close( ogg_voice.stream );
+          ogg_voice.stream = NULL;
           return;
         }
       }
       
-      ogg_available *= 2;
-      ogg_position   = 0;
+      ogg_voice.available *= 2;
+      ogg_voice.voice.position   = 0;
     }
     
-    const int16_t* pcm = ogg_pcm + ogg_position;
+    const int16_t* pcm = ogg_voice.pcm + ogg_voice.voice.position;
     
-    if ( ogg_available < buf_free )
+    if ( ogg_voice.available < buf_free )
     {
-      for ( int i = ogg_available; i != 0; --i )
+      for ( int i = ogg_voice.available; i != 0; --i )
       {
         *buffer++ += *pcm++;
       }
       
-      buf_free -= ogg_available;
+      buf_free -= ogg_voice.available;
       goto again;
     }
     else
@@ -288,8 +294,8 @@ static void ogg_mix( int32_t* buffer )
         *buffer++ += *pcm++;
       }
       
-      ogg_position  += buf_free;
-      ogg_available -= buf_free;
+      ogg_voice.voice.position += buf_free;
+      ogg_voice.available      -= buf_free;
     }
   }
 }

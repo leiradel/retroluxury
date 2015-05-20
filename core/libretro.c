@@ -16,8 +16,7 @@
 
 extern const char* rl_gitstamp;
 
-void* constcast( const void* ptr );
-void  register_rl( lua_State* L, void* pack, retro_input_state_t* input_state_cb, retro_video_refresh_t* video_cb );
+void register_rl( lua_State* L, void* pack, retro_input_state_t* input_state_cb, retro_video_refresh_t* video_cb );
 
 /*---------------------------------------------------------------------------*/
 
@@ -81,6 +80,7 @@ static bool input_state[ MAX_PADS ][ sizeof( input_descriptors ) / sizeof( input
 typedef struct
 {
   lua_State* L;
+  void*      pack;
   int        tick_ref;
 }
 corestate_t;
@@ -97,8 +97,7 @@ static int l_init_state( lua_State* L )
 #endif
   
   /* Register rl functions and types. */
-  void* pack = lua_touserdata( L, 1 );
-  register_rl( L, pack, &input_state_cb, &video_cb );
+  register_rl( L, state.pack, &input_state_cb, &video_cb );
   
   /* Execute boot.lua. */
   if ( luaL_loadbufferx( L, boot_lua, boot_lua_len, "boot.lua", "t" ) != LUA_OK )
@@ -132,22 +131,29 @@ static int l_pcall( lua_State* L, int nargs, int nres )
   return 0;
 }
 
-static int init_state( void* pack )
+static int init_state( const void* data, size_t size )
 {
-  state.L = luaL_newstate();
+  state.pack = malloc( size );
   
-  if ( !state.L )
+  if ( state.pack )
   {
-    log_cb( RETRO_LOG_ERROR, "Error creating Lua state" );
-    return -1;
+    memcpy( state.pack, data, size );
+    
+    state.L = luaL_newstate();
+    
+    if ( !state.L )
+    {
+      log_cb( RETRO_LOG_ERROR, "Error creating Lua state" );
+      return -1;
+    }
+    
+    luaL_openlibs( state.L );
+    
+    lua_pushcfunction( state.L, l_init_state );
+    return l_pcall( state.L, 0, 0 );
   }
   
-  luaL_openlibs( state.L );
-  
-  lua_pushcfunction( state.L, l_init_state );
-  lua_pushlightuserdata( state.L, pack );
-  
-  return l_pcall( state.L, 1, 0 );
+  return -1;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -228,7 +234,7 @@ bool retro_load_game( const struct retro_game_info* info )
   env_cb( RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, input_descriptors );
   memset( input_state, 0, sizeof( input_state ) );
   
-  return !init_state( constcast( info->data ) );
+  return !init_state( info->data, info->size );
 }
 
 size_t retro_get_memory_size( unsigned id )
@@ -358,6 +364,7 @@ bool retro_load_game_special(unsigned a, const struct retro_game_info* b, size_t
 void retro_unload_game()
 {
   lua_close( state.L );
+  free( state.pack );
 }
 
 unsigned retro_get_region()
