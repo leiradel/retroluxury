@@ -23,7 +23,14 @@ typedef struct
 }
 rl_sound_t;
 
-typedef void ( *rl_soundstop_t )( const rl_sound_t*, int reason );
+typedef struct
+{
+  rl_userdata_t ud;
+  const rl_sound_t* sound;
+}
+rl_voice_t;
+
+typedef void ( *rl_soundstop_t )( rl_voice_t* voice, int reason );
 
 void rl_sound_init( void );
 void rl_sound_done( void );
@@ -31,14 +38,13 @@ void rl_sound_done( void );
 rl_sound_t* rl_sound_create( const void* data, size_t size, int stereo );
 #define     rl_sound_destroy( sound ) do { rl_free( sound ); } while ( 0 )
 
-int  rl_sound_play( const rl_sound_t* sound, int repeat, rl_soundstop_t stop_cb );
-void rl_sound_stop( int index );
+rl_voice_t* rl_sound_play( const rl_sound_t* sound, int repeat, rl_soundstop_t stop_cb );
+void        rl_sound_stop( rl_voice_t* voice );
 
 void rl_sound_stop_all( void );
 
 #ifdef RL_OGG_VORBIS
-int  rl_sound_play_ogg( const void* data, size_t size, int repeat, rl_soundstop_t stop_cb );
-void rl_sound_stop_ogg( void );
+rl_voice_t* rl_sound_play_ogg( const void* data, size_t size, int repeat, rl_soundstop_t stop_cb );
 #endif
 
 const int16_t* rl_sound_mix( void );
