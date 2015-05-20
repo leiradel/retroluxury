@@ -180,7 +180,7 @@ static int testscr_init( testscr_t* s )
     goto error5;
   }
   
-  if ( rl_backgrnd_create( WIDTH, HEIGHT ) )
+  if ( rl_backgrnd_create( WIDTH, HEIGHT, RL_BACKGRND_EXACT ) )
   {
   error7:
     rl_map_destroy( s->map );
