@@ -3,7 +3,11 @@
 
 #include <stdint.h>
 
-int  rl_backgrnd_create( int width, int height );
+#define RL_BACKGRND_EXACT   0
+//#define RL_BACKGRND_STRETCH 1
+//#define RL_BACKGRND_EXPAND  2
+
+int  rl_backgrnd_create( int width, int height, int aspect );
 void rl_backgrnd_destroy( void );
 
 void      rl_backgrnd_clear( uint16_t color );

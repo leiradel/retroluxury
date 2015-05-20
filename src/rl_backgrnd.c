@@ -7,17 +7,20 @@ static uint16_t* pixels;
 static int       width, height;
 static uint16_t* fb;
 
-int rl_backgrnd_create( int w, int h )
+int rl_backgrnd_create( int w, int h, int aspect )
 {
-  pixels = (uint16_t*)rl_malloc( ( ( w + RL_BACKGRND_MARGIN ) * h + RL_BACKGRND_MARGIN ) * sizeof( uint16_t ) );
-  
-  if ( pixels )
+  if ( aspect == RL_BACKGRND_EXACT )
   {
-    width  = w;
-    height = h;
-    fb     = (uint16_t*)pixels + RL_BACKGRND_MARGIN;
+    pixels = (uint16_t*)rl_malloc( ( ( w + RL_BACKGRND_MARGIN ) * h + RL_BACKGRND_MARGIN ) * sizeof( uint16_t ) );
     
-    return 0;
+    if ( pixels )
+    {
+      width  = w;
+      height = h;
+      fb     = (uint16_t*)pixels + RL_BACKGRND_MARGIN;
+      
+      return 0;
+    }
   }
   
   return -1;
