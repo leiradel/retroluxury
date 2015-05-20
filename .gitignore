@@ -4,3 +4,4 @@
 *.so
 *~
 rl_version.c
+boot_lua.h
