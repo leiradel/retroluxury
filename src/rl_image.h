@@ -28,9 +28,11 @@ rl_image_t;
 
 typedef struct
 {
+  rl_userdata_t ud;
+  
   int num_images;
   
-  const rl_image_t* images[ 0 ];
+  rl_image_t* images[ 0 ];
 }
 rl_imageset_t;
 
