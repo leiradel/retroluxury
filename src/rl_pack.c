@@ -3,19 +3,7 @@
 #include <string.h>
 
 #include <rl_endian.c>
-
-static uint32_t djb2( const char* str )
-{
-  const unsigned char* aux = (const unsigned char*)str;
-  uint32_t hash = 5381;
-
-  while ( *aux )
-  {
-    hash = ( hash << 5 ) + hash + *aux++;
-  }
-
-  return hash;
-}
+#include <rl_hash.c>
 
 rl_entry_t* rl_find_entry( void* data, const char* name )
 {
