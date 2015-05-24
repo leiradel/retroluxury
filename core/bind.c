@@ -1016,6 +1016,12 @@ static int l_loadMap( lua_State* L )
 
 /*****************************************************************************/
 
+static int openf( lua_State* L )
+{
+  lua_newtable( L );
+  return 1;
+}
+
 void register_rl( lua_State* L, void* pack, retro_input_state_t* input_state_cb, retro_video_refresh_t* video_cb )
 {
   static const luaL_Reg statics[] =
@@ -1040,20 +1046,14 @@ void register_rl( lua_State* L, void* pack, retro_input_state_t* input_state_cb,
     { NULL, NULL }
   };
   
-  // --
+  int top = lua_gettop( L );
   
-  lua_newtable( L );
-  
-  // module
+  luaL_requiref( L, "rl", openf, 0 );
   
   lua_pushlightuserdata( L, pack );
   lua_pushlightuserdata( L, input_state_cb );
   lua_pushlightuserdata( L, video_cb );
   luaL_setfuncs( L, statics, 3 );
   
-  // module
-  
-  lua_setglobal( L, "rl" );
-  
- // --
+  lua_settop( L, top );
 }
