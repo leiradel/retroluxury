@@ -79,9 +79,11 @@ static bool input_state[ MAX_PADS ][ sizeof( input_descriptors ) / sizeof( input
 
 typedef struct
 {
-  lua_State* L;
-  void*      pack;
-  int        tick_ref;
+  lua_State*   L;
+  int          first;
+  retro_time_t t0;
+  void*        pack;
+  int          tick_ref;
 }
 corestate_t;
 
@@ -109,6 +111,8 @@ static int l_init_state( lua_State* L )
   
   /* Make a reference to the tick function. */
   state.tick_ref = luaL_ref( L, LUA_REGISTRYINDEX );
+  
+  return 0;
 }
 
 static int l_traceback( lua_State* L )
@@ -133,6 +137,19 @@ static int l_pcall( lua_State* L, int nargs, int nres )
 
 static int init_state( const void* data, size_t size )
 {
+  static const luaL_Reg libs[] = {
+    { "_G",            luaopen_base },
+    { LUA_LOADLIBNAME, luaopen_package },
+    { LUA_COLIBNAME,   luaopen_coroutine },
+    { LUA_TABLIBNAME,  luaopen_table },
+    /*{ LUA_IOLIBNAME,   luaopen_io },*/
+    { LUA_OSLIBNAME,   luaopen_os },
+    { LUA_STRLIBNAME,  luaopen_string },
+    { LUA_MATHLIBNAME, luaopen_math },
+    { LUA_UTF8LIBNAME, luaopen_utf8 },
+    { LUA_DBLIBNAME,   luaopen_debug }
+  };
+
   state.pack = malloc( size );
   
   if ( state.pack )
@@ -141,16 +158,23 @@ static int init_state( const void* data, size_t size )
     
     state.L = luaL_newstate();
     
-    if ( !state.L )
+    if ( state.L )
     {
-      log_cb( RETRO_LOG_ERROR, "Error creating Lua state" );
-      return -1;
+      state.first = 1;
+      state.t0 = 0;
+      
+      for ( int i = 0; i < sizeof( libs ) / sizeof( libs[ 0 ] ); i++)
+      {
+        luaL_requiref( state.L, libs[ i ].name, libs[ i ].func, 1 );
+        lua_pop( L, 1 ); /* remove lib */
+      }
+      
+      lua_pushcfunction( state.L, l_init_state );
+      return l_pcall( state.L, 0, 0 );
     }
     
-    luaL_openlibs( state.L );
-    
-    lua_pushcfunction( state.L, l_init_state );
-    return l_pcall( state.L, 0, 0 );
+    log_cb( RETRO_LOG_ERROR, "Error creating Lua state" );
+    return -1;
   }
   
   return -1;
@@ -291,11 +315,20 @@ void retro_get_system_av_info( struct retro_system_av_info* info )
 void retro_run()
 {
   input_poll_cb();
+  retro_time_t t1 = perf_cb.get_time_usec();
   
-  lua_rawgeti( state.L, LUA_REGISTRYINDEX, state.tick_ref );
-  l_pcall( state.L, 0, 0 );
+  if ( !state.first )
+  {
+    lua_rawgeti( state.L, LUA_REGISTRYINDEX, state.tick_ref );
+    lua_pushinteger( state.L, t1 - state.t0 );
+    l_pcall( state.L, 1, 0 );
+  }
   
+  state.first = 0;
+  state.t0 = t1;
   audio_cb( rl_sound_mix(), RL_SAMPLES_PER_FRAME );
+  
+  lua_gc( L, LUA_GCSTEP, 0 );
 }
 
 void retro_deinit()

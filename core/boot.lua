@@ -1,3 +1,5 @@
+local rl = require 'rl'
+
 -- Swap 2nd searcher for one that reads from the pack file.
 package.searchers[ 2 ] = function( name )
   local loader = function( name, contents )
@@ -14,8 +16,9 @@ while package.searchers[ i ] do
   package.searchers[ i ] = nil
 end
 
--- Remove the entire io module.
-io = nil
+-- Replace selected math functions.
+math.randomseed = rl.randomseed
+math.random = rl.random
 
 -- Remove selected os functions.
 os.execute = nil
@@ -27,12 +30,10 @@ os.tmpname = nil
 
 -- Rewrite loadfile.
 loadfile = function( filename, mode, env )
-  if mode and env then
+  if env then
     return load( rl.loadFile( filename ), filename, mode, env )
   elseif mode then
     return load( rl.loadFile( filename ), filename, mode )
-  elseif env then
-    return load( rl.loadFile( filename ), filename, nil, env )
   else
     return load( rl.loadFile( filename ), filename )
   end
