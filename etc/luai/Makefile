@@ -9,5 +9,10 @@ all: luai.exe
 luai.exe: main.o image.o path.o realpath.o
 	gcc $(LFLAGS) -o $@ $+ -llua
 
+main.o: main.c boot_lua.h
+
+boot_lua.h: boot.lua
+	xxd -i $< | sed "s@unsigned@@" > $@
+
 clean:
-	rm -f luai.exe main.o image.o path.o realpath.o
+	rm -f luai.exe main.o image.o path.o realpath.o boot_lua.h

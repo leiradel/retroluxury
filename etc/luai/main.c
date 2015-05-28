@@ -7,6 +7,8 @@
 #include "image.h"
 #include "path.h"
 
+#include "boot_lua.h"
+
 char __cdecl *realpath( const char *__restrict__ name, char *__restrict__ resolved );
 
 static int luamain( lua_State* L )
@@ -15,35 +17,28 @@ static int luamain( lua_State* L )
   const char** argv = (const char**)lua_touserdata( L, lua_upvalueindex( 2 ) );
   int          i;
   
-  if ( argc < 2 )
+  /* Load boot.lua */
+  if ( luaL_loadbufferx( L, boot_lua, boot_lua_len, "boot.lua", "t" ) != LUA_OK )
   {
-    return luaL_error( L, "Lua file missing\n" );
+    return lua_error( L );
   }
   
-  if ( luaL_loadfile( L, argv[ 1 ] ) != LUA_OK )
-  {
-    return luaL_error( L, "%s", lua_tostring( L, -1 ) );
-  }
-  
+  /* Run it, it returns the bootstrap main function */
   lua_call( L, 0, 1 );
   
+  /* Prepare the args table */
   lua_newtable( L );
   
-  {
-    char  buffer[ _MAX_PATH ];
-    char* resolved = realpath( argv[ 1 ], buffer );
-    
-    lua_pushstring( L, resolved ? resolved : argv[ 1 ] );
-    lua_rawseti( L, -2, 0 );
-  }
-  
-  for ( i = 2; i < argc; i++ )
+  for ( i = 1; i < argc; i++ )
   {
     lua_pushstring( L, argv[ i ] );
     lua_rawseti( L, -2, i - 1 );
   }
   
+  /* Call the bootstrap main function with the args table */
   lua_call( L, 1, 1 );
+  
+  /* Returns the integer result */
   return (int)lua_tointeger( L, -1 );
 }
 
