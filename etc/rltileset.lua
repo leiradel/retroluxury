@@ -1,67 +1,7 @@
 local image = require 'image'
-local path = require 'path'
+local mkts  = require 'mkts'
 
-local function newwriter()
-  return {
-    bytes = {},
-    write8 = function( self, x )
-      self.bytes[ #self.bytes + 1 ] = string.char( x & 255 )
-    end,
-    write16 = function( self, x )
-      self.bytes[ #self.bytes + 1 ] = string.char( ( x >> 8 ) & 255, x & 255 )
-    end,
-    write32 = function( self, x )
-      self.bytes[ #self.bytes + 1 ] = string.char( ( x >> 24 ) & 255, ( x >> 16 ) & 255, ( x >> 8 ) & 255, x & 255 )
-    end,
-    append = function( self, rle )
-      self.bytes[ #self.bytes + 1 ] = table.concat( rle.bytes )
-    end,
-    size = function( self )
-      self.bytes = { table.concat( self.bytes ) }
-      return #self.bytes[ 1 ]
-    end,
-    save = function( self, name )
-      local file, err = io.open( name, 'wb' )
-      if not file then error( err ) end
-      self.bytes = { table.concat( self.bytes ) }
-      file:write( self.bytes[ 1 ] )
-      file:close()
-    end
-  }
-end
-
-local function rgbto16( r, g, b )
-  r = r * 31 // 255
-  g = g * 63 // 255
-  b = b * 31 // 255
-  
-  return ( r << 11 ) | ( g << 5 ) | b
-end
-
-local function getpixel( png, x, y )
-  local r, g, b = image.split( png:getPixel( x, y ) )
-  return rgbto16( r, g, b )
-end
-
-local function mktileset( images )
-  local writer = newwriter()
-  
-  writer:write16( images[ 1 ]:getWidth() )
-  writer:write16( images[ 1 ]:getHeight() )
-  writer:write16( #images )
-  
-  for _, img in pairs( images ) do
-    for y = 0, img:getHeight() - 1 do
-      for x = 0, img:getWidth() - 1 do
-        writer:write16( getpixel( img, x, y ) )
-      end
-    end
-  end
-  
-  return writer
-end
-
-local function main( args )
+return function( args )
   if #args == 0 then
     io.write[[
 rltileset.lua reads all images in the given directory and writes tileset data
@@ -119,19 +59,17 @@ Usage: luai rltileset.lua [ options ] <directory>
   end
   
   if #images ~= 0 then
-    local writer = mktileset( images )
+    local out = mkts( images )
     
     if not output then
       local dir, name, ext = path.split( dir )
       output = dir .. path.separator .. name .. '.tls'
     end
     
-    writer:save( output )
+    out:save( output )
   else
     io.write( 'no images were found\n' )
   end
   
   return 0
 end
-
-return main, mktileset

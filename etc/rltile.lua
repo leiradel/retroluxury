@@ -1,13 +1,6 @@
-local image = require 'image'
-local path = require 'path'
-
-local function rgbto16( r, g, b )
-  r = r * 31 // 255
-  g = g * 63 // 255
-  b = b * 31 // 255
-  
-  return ( r << 11 ) | ( g << 5 ) | b
-end
+local image   = require 'image'
+local path    = require 'path'
+local rgbto16 = require 'rgbto16'
 
 return function( args )
   if #args == 0 then
@@ -41,9 +34,7 @@ Usage: luai rltile.lua <image>
   end
   
   local dir, name, ext = path.split( name )
-  local file, err = io.open( dir .. path.separator .. name .. '.h', 'w' )
-  if not file then error( err ) end
-  
+  local file = assert( io.open( dir .. path.separator .. name .. '.h', 'w' ) )
   local array = string.gsub( name .. ext, '[^a-zA-Z0-9_]', '_' )
   
   file:write( 'const uint16_t ', array, '[] = {\n' )

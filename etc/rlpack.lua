@@ -1,75 +1,11 @@
-local function djb2( str )
-  local hash = 5381
-  
-  for i = 1, #str do
-    hash = hash * 33 + str:byte( i )
-    hash = hash & 0xffffffff
-  end
-  
-  return hash
-end
+local djb2   = require 'djb2'
+local writer = require 'writer'
 
 local function filesize( path )
-  local file, err = io.open( path, 'rb' )
-  
-  if not file then
-    error( err )
-  end
-  
-  local size, err = file:seek( 'end' )
-  
-  if not size then
-    file:close()
-    error( err )
-  end
-  
+  local file = assert( io.open( path, 'rb' ) )
+  local size = assert( file:seek( 'end' ) )
   file:close()
   return size
-end
-
-local function newwriter()
-  return {
-    bytes = {},
-    write8 = function( self, x )
-      self.bytes[ #self.bytes + 1 ] = string.char( x & 255 )
-    end,
-    write16 = function( self, x )
-      self.bytes[ #self.bytes + 1 ] = string.char( ( x >> 8 ) & 255, x & 255 )
-    end,
-    write32 = function( self, x )
-      self.bytes[ #self.bytes + 1 ] = string.char( ( x >> 24 ) & 255, ( x >> 16 ) & 255, ( x >> 8 ) & 255, x & 255 )
-    end,
-    writestr = function( self, str )
-      self.bytes[ #self.bytes + 1 ] = str
-    end,
-    append = function( self, rle )
-      self.bytes[ #self.bytes + 1 ] = table.concat( rle.bytes )
-    end,
-    align = function( self, x )
-      local size = self:size()
-      local new_size = ( size + x - 1 ) & -x
-      
-      while size < new_size do
-        self:write8( 0 )
-        size = size + 1
-      end
-    end,
-    get = function( self )
-      self.bytes = { table.concat( self.bytes ) }
-      return self.bytes[ 1 ]
-    end,
-    size = function( self )
-      self.bytes = { table.concat( self.bytes ) }
-      return #self.bytes[ 1 ]
-    end,
-    save = function( self, name )
-      local file, err = io.open( name, 'wb' )
-      if not file then error( err ) end
-      self.bytes = { table.concat( self.bytes ) }
-      file:write( self.bytes[ 1 ] )
-      file:close()
-    end
-  }
 end
 
 return function( args )
@@ -164,33 +100,33 @@ Usage: luai rlpack.lua cuts <filename.pak> files...
     end
   end
   
-  local out = newwriter()
-  out:write32( num_entries )
-  out:write32( 0 )
+  local out = writer()
+  out:add32( num_entries )
+  out:add32( 0 )
   
   for i = 0, num_entries - 1 do
     if map[ i ] then
       local entry = map[ i ]
       
-      out:write32( entry.name_hash )
-      out:write32( entry.name_offset )
-      out:write32( entry.data_offset )
-      out:write32( entry.data_size )
-      out:write32( 0 )
+      out:add32( entry.name_hash )
+      out:add32( entry.name_offset )
+      out:add32( entry.data_offset )
+      out:add32( entry.data_size )
+      out:add32( 0 )
     else
-      out:write32( 0 )
-      out:write32( 0 )
-      out:write32( 0 )
-      out:write32( 0 )
-      out:write32( 0 )
+      out:add32( 0 )
+      out:add32( 0 )
+      out:add32( 0 )
+      out:add32( 0 )
+      out:add32( 0 )
     end
   end
   
   for i = 0, num_entries - 1 do
     if map[ i ] then
       out:align( 4 )
-      out:writestr( map[ i ].name )
-      out:write8( 0 )
+      out:addstring( map[ i ].name )
+      out:add8( 0 )
     end
   end
   
@@ -206,7 +142,7 @@ Usage: luai rlpack.lua cuts <filename.pak> files...
       file:close()
       
       out:align( 16 )
-      out:writestr( all )
+      out:addstring( all )
     end
   end
   
