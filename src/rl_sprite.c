@@ -4,6 +4,14 @@
 
 #include <stdlib.h>
 
+typedef union item_t item_t;
+
+union item_t
+{
+  rl_sprite_t sprite;
+  item_t*     next;
+};
+
 typedef struct
 {
   rl_sprite_t* sprite;
@@ -11,15 +19,53 @@ typedef struct
 }
 spt_t;
 
-static spt_t sprites[ RL_MAX_SPRITES + 1 ];
-static int   num_sprites, num_visible;
-static int   x0, y0;
+static item_t  items[ RL_MAX_SPRITES ];
+static item_t* free_list;
+static spt_t   sprites[ RL_MAX_SPRITES + 1 ];
+static int     num_sprites, num_visible;
+static int     x0, y0;
 
 static uint16_t  saved_backgrnd[ RL_BG_SAVE_SIZE ];
 static uint16_t* saved_ptr;
 
+static const rl_sprite_t guard =
+{
+#if RL_USERDATA_COUNT <= 1
+  0,
+#elif RL_USERDATA_COUNT <= 2
+  0,
+#elif RL_USERDATA_COUNT <= 3
+  0,
+#elif RL_USERDATA_COUNT <= 4
+  0,
+#elif RL_USERDATA_COUNT <= 5
+  0,
+#elif RL_USERDATA_COUNT <= 6
+  0,
+#elif RL_USERDATA_COUNT <= 7
+  0,
+#elif RL_USERDATA_COUNT <= 8
+  0,
+#else
+#error add more comparisons (or: do you really need that many userdata?)
+#endif
+  0,
+  RL_SPRITE_UNUSED,
+  0,
+  0,
+  NULL
+};
+
 void rl_sprite_init( void )
 {
+  for ( int i = 0; i < RL_MAX_SPRITES - 1; i++ )
+  {
+    items[ i ].next = items + i + 1;
+  }
+  
+  items[ RL_MAX_SPRITES - 1 ].next = NULL;
+  free_list = items;
+  
   num_sprites = num_visible = 0;
   x0 = y0 = 0;
 }
@@ -28,18 +74,16 @@ rl_sprite_t* rl_sprite_create( void )
 {
   if ( num_sprites < RL_MAX_SPRITES )
   {
-    rl_sprite_t* sprite = (rl_sprite_t*)rl_malloc( sizeof( rl_sprite_t ) );
+    rl_sprite_t* sprite = &free_list->sprite;
+    free_list = free_list->next;
     
-    if ( sprite )
-    {
-      sprites[ num_sprites++ ].sprite = sprite;
-      
-      sprite->layer = sprite->flags = 0;
-      sprite->x = sprite->y = 0;
-      sprite->image = NULL;
-      
-      return sprite;
-    }
+    sprites[ num_sprites++ ].sprite = sprite;
+    
+    sprite->layer = sprite->flags = 0;
+    sprite->x = sprite->y = 0;
+    sprite->image = NULL;
+    
+    return sprite;
   }
   
   return NULL;
@@ -82,10 +126,7 @@ void rl_sprites_blit_nobg( void )
   }
   
   qsort( (void*)sprites, num_sprites, sizeof( spt_t ), compare );
-  
-  rl_sprite_t guard;
-  guard.flags = RL_SPRITE_UNUSED;
-  sprites[ num_sprites ].sprite = &guard; /* guard */
+  sprites[ num_sprites ].sprite = &guard;
   
   sptptr = sprites;
   
@@ -114,7 +155,24 @@ void rl_sprites_blit_nobg( void )
     while ( ( sptptr->sprite->flags & RL_SPRITE_UNUSED ) == 0 );
   }
   
-  num_sprites = sptptr - sprites;
+  int new_num_sprites = sptptr - sprites;
+  
+  /* Iterate over unused sprites and free them */
+  /* flags & 0x0004U == 0x0004U */
+  endptr = sprites + num_sprites;
+  
+  if ( sptptr < endptr )
+  {
+    do
+    {
+      item_t* item = (item_t*)sptptr->sprite;
+      item->next = free_list;
+      free_list = item;
+    }
+    while ( sptptr < endptr );
+  }
+  
+  num_sprites = new_num_sprites;
 }
 
 void rl_sprites_blit( void )
@@ -134,10 +192,7 @@ void rl_sprites_blit( void )
   }
   
   qsort( (void*)sprites, num_sprites, sizeof( spt_t ), compare );
-  
-  rl_sprite_t guard;
-  guard.flags = RL_SPRITE_UNUSED;
-  sprites[ num_sprites ].sprite = &guard; /* guard */
+  sprites[ num_sprites ].sprite = &guard;
   
   sptptr = sprites;
   saved_ptr = saved_backgrnd;
@@ -168,7 +223,24 @@ void rl_sprites_blit( void )
     while ( ( sptptr->sprite->flags & RL_SPRITE_UNUSED ) == 0 );
   }
   
-  num_sprites = sptptr - sprites;
+  int new_num_sprites = sptptr - sprites;
+  
+  /* Iterate over unused sprites and free them */
+  /* flags & 0x0004U == 0x0004U */
+  endptr = sprites + num_sprites;
+  
+  if ( sptptr < endptr )
+  {
+    do
+    {
+      item_t* item = (item_t*)sptptr->sprite;
+      item->next = free_list;
+      free_list = item;
+    }
+    while ( sptptr < endptr );
+  }
+  
+  num_sprites = new_num_sprites;
 }
 
 void rl_sprites_unblit( void )
