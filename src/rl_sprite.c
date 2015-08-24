@@ -148,6 +148,7 @@ void rl_sprites_blit_nobg( void )
     {
       sptptr->item->next = free_list;
       free_list = sptptr->item;
+      sptptr++;
     }
     while ( sptptr < endptr );
   }
@@ -216,9 +217,9 @@ void rl_sprites_blit( void )
   {
     do
     {
-      item_t* item = (item_t*)sptptr->item;
-      item->next = free_list;
-      free_list = item;
+      sptptr->item->next = free_list;
+      free_list = sptptr->item;
+      sptptr++;
     }
     while ( sptptr < endptr );
   }
