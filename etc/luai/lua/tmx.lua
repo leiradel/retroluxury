@@ -1,5 +1,6 @@
-local image = require 'xml'
+local image = require 'image'
 local xml   = require 'xml'
+local path  = require 'path'
 
 return {
   load = function( filename )

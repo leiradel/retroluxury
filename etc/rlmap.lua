@@ -131,21 +131,22 @@ local function compile_cmd( args )
       end
     end
     
-    local png = render( map, names )
+    local png = tmx.render( map, names )
     local tileset = {}
+    local tw, th = map.tilewidth, map.tileheight
     
-    for y = 0, png:getHeight() - 1, map.tileheight do
-      built.layer0[ y // map.tileheight + 1 ] = {}
+    for y = 0, png:getHeight() - 1, th do
+      built.layer0[ y // th + 1 ] = {}
       
-      for x = 0, png:getWidth() - 1, map.tilewidth do
-        local sub = png:sub( x, y, x + 31, y + 31 )
+      for x = 0, png:getWidth() - 1, tw do
+        local sub = png:sub( x, y, x + tw - 1, y + th - 1 )
         
         if not tileset[ sub:getHash() ] then
           built.tiles[ #built.tiles + 1 ] = sub
           tileset[ sub:getHash() ] = #built.tiles - 1
         end
         
-        built.layer0[ y // map.tileheight + 1 ][ x // map.tilewidth + 1 ] = tileset[ sub:getHash() ]
+        built.layer0[ y // th + 1 ][ x // tw + 1 ] = tileset[ sub:getHash() ]
       end
     end
   end
@@ -163,17 +164,18 @@ local function compile_cmd( args )
         end
       end
       
-      local png = render( map, names )
+      local png = tmx.render( map, names )
       local imageset = {}
+      local tw, th = map.tilewidth, map.tileheight
       
       local indices = {}
       built.layers[ l - 1 ] = indices
       
-      for y = 0, png:getHeight() - 1, map.tileheight do
-        indices[ y // map.tileheight + 1 ] = {}
+      for y = 0, png:getHeight() - 1, th do
+        indices[ y // th + 1 ] = {}
         
-        for x = 0, png:getWidth() - 1, map.tilewidth do
-          local sub = png:sub( x, y, x + 31, y + 31 )
+        for x = 0, png:getWidth() - 1, tw do
+          local sub = png:sub( x, y, x + tw - 1, y + th - 1 )
           
           if not sub:invisible() then
             if not imageset[ sub:getHash() ] then
@@ -181,9 +183,9 @@ local function compile_cmd( args )
               imageset[ sub:getHash() ] = #built.images
             end
             
-            indices[ y // map.tileheight + 1 ][ x // map.tilewidth + 1 ] = imageset[ sub:getHash() ]
+            indices[ y // th + 1 ][ x // tw + 1 ] = imageset[ sub:getHash() ]
           else
-            indices[ y // map.tileheight + 1 ][ x // map.tilewidth + 1 ] = 0
+            indices[ y // th + 1 ][ x // tw + 1 ] = 0
           end
         end
       end
