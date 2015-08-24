@@ -36,7 +36,7 @@ typedef struct
 }
 rl_imageset_t;
 
-/* Creates an image given the RLE-encoded data produced by rlrle. */
+/* Creates an image given the RLE-encoded data produced by rl_imagedata_rle_encode. */
 rl_image_t* rl_image_create( const void* data, size_t size );
 /* Destroys an image. */
 #define rl_image_destroy( image ) do { rl_free( (void*)image ); } while ( 0 )
