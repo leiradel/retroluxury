@@ -59,7 +59,7 @@ const rl_imagedata_t* rl_imagedata_sub( const rl_imagedata_t* parent, int x0, in
   return NULL;
 }
 
-void rl_image_destroy( const rl_imagedata_t* imagedata )
+void rl_imagedata_destroy( const rl_imagedata_t* imagedata )
 {
   if ( !imagedata->parent )
   {
@@ -158,7 +158,7 @@ static size_t rle_row( uint16_t* rle, int* bgcount, const rl_imagedata_t* imaged
       while ( x < ( xx + limit ) && x < width )
       {
         int aa;
-        uint16_t rgb16 = get_pixel( &aa, imagedata, x, y, check_transp, transparent );
+        get_pixel( &aa, imagedata, x, y, check_transp, transparent );
         
         if ( aa != a )
         {
@@ -219,7 +219,7 @@ const void* rl_imagedata_rle_encode( size_t* size, const rl_imagedata_t* imageda
     total += rle_row( NULL, &bgcount, imagedata, y, limit, check_transp, transparent );
   }
   
-  void* rle = rl_malloc( total + 8 + height * 4 );
+  void* rle = rl_malloc( total + ( 2 * sizeof( uint16_t ) + sizeof( uint32_t ) ) + height * sizeof( uint32_t ) );
   
   if ( rle )
   {
@@ -242,7 +242,7 @@ const void* rl_imagedata_rle_encode( size_t* size, const rl_imagedata_t* imageda
     
     for ( int y = 0; y < height; y++ )
     {
-      *ptr.u32++ = ne32( total );
+      *ptr.u32++ = ne32( total + y * sizeof( uint32_t ) );
       total += rle_row( NULL, &bgcount, imagedata, y, limit, check_transp, transparent );
     }
     
