@@ -2,9 +2,9 @@
 #include <rl_memory.h>
 #include <rl_backgrnd.h>
 
-#include <string.h>
-
 #include <rl_endian.c>
+
+#include <string.h>
 
 rl_image_t* rl_image_create( const void* data, size_t size )
 {
@@ -18,8 +18,8 @@ rl_image_t* rl_image_create( const void* data, size_t size )
   
   ptr.v = data;
   
-  int width  = ne16( *ptr.u16++ );
-  int height = ne16( *ptr.u16++ );
+  int width  = *ptr.u16++;
+  int height = *ptr.u16++;
   
   // structure size
   size_t mem = sizeof( rl_image_t );
@@ -35,7 +35,7 @@ rl_image_t* rl_image_create( const void* data, size_t size )
   {
     image->width  = width;
     image->height = height;
-    image->used   = ne32( *ptr.u32++ );
+    image->used   = *ptr.u32++;
     
     uint32_t* restrict rows = (uint32_t*)( image->data );
     image->rows = rows;
@@ -44,12 +44,12 @@ rl_image_t* rl_image_create( const void* data, size_t size )
     
     for ( int i = 0; i < height; i++ )
     {
-      *rows++ = height * sizeof( uint32_t ) + ne32( *ptr.u32++ );
+      *rows++ = *ptr.u32++;
     }
     
     for ( int i = 0; i < size; i += 2 )
     {
-      *rle++ = ne16( *ptr.u16++ );
+      *rle++ = *ptr.u16++;
     }
     
     return image;

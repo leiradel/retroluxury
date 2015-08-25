@@ -1,8 +1,6 @@
 #include <rl_imgdata.h>
 #include <rl_memory.h>
 
-#include <rl_endian.c>
-
 /*---------------------------------------------------------------------------*/
 /* stb_image config and inclusion */
 
@@ -136,7 +134,7 @@ static size_t rle_row( uint16_t* rle, int* bgcount, const rl_imagedata_t* imaged
   {
     if ( !dryrun )
     {
-      *cols++ = ne16( rle - start );
+      *cols++ = rle - start;
     }
     
     int       x = xx;
@@ -170,7 +168,7 @@ static size_t rle_row( uint16_t* rle, int* bgcount, const rl_imagedata_t* imaged
       
       if ( !dryrun )
       {
-        *rle = ne16( ( a << 13 ) | count );
+        *rle = ( a << 13 ) | count;
         ( *runs )++;
       }
       
@@ -185,17 +183,12 @@ static size_t rle_row( uint16_t* rle, int* bgcount, const rl_imagedata_t* imaged
           
           if ( !dryrun )
           {
-            *rle = ne16( rgb16 );
+            *rle = rgb16;
           }
           
           rle++;
         }
       }
-    }
-    
-    if ( !dryrun )
-    {
-      *runs = ne16( *runs );
     }
   }
   
@@ -219,7 +212,13 @@ const void* rl_imagedata_rle_encode( size_t* size, const rl_imagedata_t* imageda
     total += rle_row( NULL, &bgcount, imagedata, y, limit, check_transp, transparent );
   }
   
-  void* rle = rl_malloc( total + ( 2 * sizeof( uint16_t ) + sizeof( uint32_t ) ) + height * sizeof( uint32_t ) );
+  void* rle = rl_malloc(
+    sizeof( uint16_t ) +          /* width */
+    sizeof( uint16_t ) +          /* height */
+    sizeof( uint32_t ) +          /* bgcount */
+    height * sizeof( uint32_t ) + /* row pointers */
+    total                         /* rle data */
+  );
   
   if ( rle )
   {
@@ -234,24 +233,22 @@ const void* rl_imagedata_rle_encode( size_t* size, const rl_imagedata_t* imageda
     
     ptr.v = rle;
     
-    *ptr.u16++ = ne16( width );
-    *ptr.u16++ = ne16( height );
-    *ptr.u32++ = ne32( bgcount );
+    *ptr.u16++ = width;
+    *ptr.u16++ = height;
+    *ptr.u32++ = bgcount;
     
-    total = 0;
-    
-    for ( int y = 0; y < height; y++ )
-    {
-      *ptr.u32++ = ne32( total + y * sizeof( uint32_t ) );
-      total += rle_row( NULL, &bgcount, imagedata, y, limit, check_transp, transparent );
-    }
+    total = height * sizeof( uint32_t );
+    uint8_t* rledata = ptr.u8 + total;
     
     for ( int y = 0; y < height; y++ )
     {
-      ptr.u8 += rle_row( ptr.u16, &bgcount, imagedata, y, limit, check_transp, transparent );
+      *ptr.u32++    = total;
+      size_t count  = rle_row( (uint16_t*)rledata, &bgcount, imagedata, y, limit, check_transp, transparent );
+      total        += count;
+      rledata      += count;
     }
     
-    *size = ptr.u8 - (uint8_t*)rle;
+    *size = rledata - (uint8_t*)rle;
     return rle;
   }
   
