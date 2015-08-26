@@ -30,8 +30,6 @@ static item_t* free_list;
 static spt_t sprites[ RL_MAX_SPRITES + 1 ];
 static int   num_sprites, num_visible;
 
-static int x0, y0;
-
 static uint16_t  saved_backgrnd[ RL_BG_SAVE_SIZE ];
 static uint16_t* saved_ptr;
 
@@ -46,7 +44,6 @@ void rl_sprite_init( void )
   free_list = items;
   
   num_sprites = num_visible = 0;
-  x0 = y0 = 0;
 }
 
 rl_sprite_t* rl_sprite_create( void )
@@ -65,12 +62,6 @@ rl_sprite_t* rl_sprite_create( void )
   }
   
   return NULL;
-}
-
-void rl_sprites_translate( int x, int y )
-{
-  x0 = x;
-  y0 = y;
 }
 
 static int compare( const void* e1, const void* e2 )
@@ -105,7 +96,7 @@ void rl_sprites_blit_nobg( void )
   
   qsort( (void*)sprites, num_sprites, sizeof( spt_t ), compare );
   
-  item_t guard = { 0 };
+  item_t guard = { { { { { 0 } } } } }; /* Ugh */
   guard.sprite.flags = RL_SPRITE_UNUSED;
   sprites[ num_sprites ].item = &guard;
   
@@ -117,7 +108,7 @@ void rl_sprites_blit_nobg( void )
   {
     do
     {
-      rl_image_blit_nobg( sptptr->item->sprite.image, x0 + sptptr->item->sprite.x, y0 + sptptr->item->sprite.y );
+      rl_image_blit_nobg( sptptr->item->sprite.image, sptptr->item->sprite.x, sptptr->item->sprite.y );
       sptptr++;
     }
     while ( sptptr->item->sprite.flags == 0 );
@@ -174,7 +165,7 @@ void rl_sprites_blit( void )
   
   qsort( (void*)sprites, num_sprites, sizeof( spt_t ), compare );
   
-  item_t guard = { 0 };
+  item_t guard = { { { { { 0 } } } } }; /* Ugh */
   guard.sprite.flags = RL_SPRITE_UNUSED;
   sprites[ num_sprites ].item = &guard;
   
@@ -188,7 +179,7 @@ void rl_sprites_blit( void )
     do
     {
       sptptr->item->bg = saved_ptr;
-      saved_ptr = rl_image_blit( sptptr->item->sprite.image, x0 + sptptr->item->sprite.x, y0 + sptptr->item->sprite.y, saved_ptr );
+      saved_ptr = rl_image_blit( sptptr->item->sprite.image, sptptr->item->sprite.x, sptptr->item->sprite.y, saved_ptr );
       sptptr++;
     }
     while ( sptptr->item->sprite.flags == 0 );
@@ -236,7 +227,7 @@ void rl_sprites_unblit( void )
   {
     do
     {
-      rl_image_unblit( sptptr->item->sprite.image, x0 + sptptr->item->sprite.x, y0 + sptptr->item->sprite.y, sptptr->item->bg );
+      rl_image_unblit( sptptr->item->sprite.image, sptptr->item->sprite.x, sptptr->item->sprite.y, sptptr->item->bg );
       sptptr--;
     }
     while ( sptptr >= sprites );

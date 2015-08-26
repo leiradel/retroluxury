@@ -31,6 +31,9 @@ typedef struct
 }
 rl_image_t;
 
+void rl_image_init( void );
+void rl_image_translate( int x, int y );
+
 /* Creates an image from a rl_imagedata_t. */
 const rl_image_t* rl_image_create( const rl_imagedata_t* imagedata, int check_transp, uint16_t transparent );
 /* Destroys an image. */
