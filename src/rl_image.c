@@ -6,112 +6,40 @@
 
 #include <string.h>
 
-rl_image_t* rl_image_create( const void* data, size_t size )
+const rl_image_t* rl_image_create( const rl_imagedata_t* imagedata, int check_transp, uint16_t transparent )
 {
-  union
+  size_t size;
+  const void* data = rl_imagedata_rle_encode( &size, imagedata, check_transp, transparent );
+  
+  if ( data )
   {
-    const void*     restrict v;
-    const uint16_t* restrict u16;
-    const uint32_t* restrict u32;
-  }
-  ptr;
-  
-  ptr.v = data;
-  
-  int width  = *ptr.u16++;
-  int height = *ptr.u16++;
-  
-  // structure size
-  size_t mem = sizeof( rl_image_t );
-  // rows array size
-  mem += height * sizeof( uint32_t );
-  // rle size
-  size -= 2 * sizeof( uint16_t ) /* width & height */ + height * sizeof( uint32_t ) /* row pointers */;
-  mem += size;
-  
-  rl_image_t* image = (rl_image_t*)rl_malloc( mem );
-  
-  if ( image )
-  {
-    image->width  = width;
-    image->height = height;
-    image->used   = *ptr.u32++;
+    rl_image_t* image = (rl_image_t*)rl_malloc( sizeof( rl_image_t ) );
     
-    uint32_t* restrict rows = (uint32_t*)( image->data );
-    image->rows = rows;
-    
-    uint16_t* restrict rle = (uint16_t*)( rows + height );
-    
-    for ( int i = 0; i < height; i++ )
+    if ( image )
     {
-      *rows++ = *ptr.u32++;
-    }
-    
-    for ( int i = 0; i < size; i += 2 )
-    {
-      *rle++ = *ptr.u16++;
-    }
-    
-    return image;
-  }
-  
-  return NULL;
-}
-
-rl_imageset_t* rl_imageset_create( const void* data, size_t size )
-{
-  union
-  {
-    const void*     restrict v;
-    const uint8_t*  restrict u8;
-    const uint16_t* restrict u16;
-    const uint32_t* restrict u32;
-  }
-  ptr;
-  
-  ptr.v = data;
-  
-  int num_images = ne16( *ptr.u16++ );
-  
-  rl_imageset_t* imageset = (rl_imageset_t*)rl_malloc( sizeof( rl_imageset_t ) + num_images * sizeof( rl_image_t* ) );
-  
-  if ( imageset )
-  {
-    imageset->num_images = num_images;
-    
-    for ( int i = 0; i < num_images; i++ )
-    {
-      size_t image_size = ne32( *ptr.u32++ );
-      imageset->images[ i ] = rl_image_create( ptr.v, image_size );
-      
-      if ( !imageset->images[ i ] )
+      union
       {
-        for ( int j = i - 1; j >= 0; --j )
-        {
-          rl_image_destroy( (void*)imageset->images[ j ] );
-        }
-        
-        rl_free( imageset );
-        return NULL;
+        const void*     v;
+        const uint8_t*  u8;
+        const uint16_t* u16;
+        const uint32_t* u32;
       }
+      ptr;
       
-      ptr.u8 += image_size;
+      image->rle = ptr.v = data;
+      
+      image->width  = *ptr.u16++;
+      image->height = *ptr.u16++;
+      image->used   = *ptr.u32++;
+      image->data   = ptr.u8;
+      
+      return image;
     }
     
-    return imageset;
+    rl_free( (void*)data );
   }
   
   return NULL;
-}
-
-void rl_imageset_destroy( const rl_imageset_t* imageset )
-{
-  for ( int i = imageset->num_images - 1; i >= 0; --i )
-  {
-    rl_image_destroy( imageset->images[ i ] );
-  }
-  
-  rl_free( (void*)imageset );
 }
 
 void rl_image_blit_nobg( const rl_image_t* image, int x, int y )

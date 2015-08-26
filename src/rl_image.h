@@ -2,6 +2,7 @@
 #define RL_IMAGE_H
 
 #include <rl_userdata.h>
+#include <rl_imgdata.h>
 
 #include <stdint.h>
 #include <stddef.h>
@@ -20,31 +21,20 @@ typedef struct
   int height;    /* the image height */
   int used;      /* number of overwritten pixels on the background */
   
-  const uint32_t* rows; /* offsets to rle data for each row */
+  const void* rle;
   
-  uint8_t   data[ 0 ]; /* stored row offsets and rle data */
+  union
+  {
+    const uint8_t*  data; /* stored row offsets and rle data */
+    const uint32_t* rows; /* offsets to rle data for each row */
+  };
 }
 rl_image_t;
 
-typedef struct
-{
-  rl_userdata_t ud;
-  
-  int num_images;
-  
-  rl_image_t* images[ 0 ];
-}
-rl_imageset_t;
-
-/* Creates an image given the RLE-encoded data produced by rl_imagedata_rle_encode. */
-rl_image_t* rl_image_create( const void* data, size_t size );
+/* Creates an image from a rl_imagedata_t. */
+const rl_image_t* rl_image_create( const rl_imagedata_t* imagedata, int check_transp, uint16_t transparent );
 /* Destroys an image. */
-#define rl_image_destroy( image ) do { rl_free( (void*)image ); } while ( 0 )
-
-/* Creates an image set. */
-rl_imageset_t* rl_imageset_create( const void* data, size_t size );
-/* Destroyes an image set. */
-void rl_imageset_destroy( const rl_imageset_t* imageset );
+#define rl_image_destroy( image ) do { rl_free( (void*)image->rle ); rl_free( (void*)image ); } while ( 0 )
 
 /* Blits an image to the given background. */
 void rl_image_blit_nobg( const rl_image_t* image, int x, int y );

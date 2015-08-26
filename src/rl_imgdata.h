@@ -24,6 +24,7 @@ const rl_imagedata_t* rl_imagedata_create( const void* data, size_t size );
 const rl_imagedata_t* rl_imagedata_sub( const rl_imagedata_t* parent, int x0, int y0, int width, int height );
 void                  rl_imagedata_destroy( const rl_imagedata_t* imagedata );
 
-const void* rl_imagedata_rle_encode( size_t* size, const rl_imagedata_t* imagedata, int limit, int check_transp, uint16_t transparent );
+uint32_t    rl_imagedata_get_pixel( const rl_imagedata_t* imagedata, int x, int y );
+const void* rl_imagedata_rle_encode( size_t* size, const rl_imagedata_t* imagedata, int check_transp, uint16_t transparent );
 
 #endif /* RL_IMGDATA_H */
