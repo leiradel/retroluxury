@@ -5,7 +5,6 @@
 #include <rl_imgdata.h>
 
 #include <stdint.h>
-#include <stddef.h>
 
 /*
 An image with RLE-encoded pixels and per-pixel alpha of 0, 25, 50, 75 and 100%.
@@ -35,15 +34,15 @@ void rl_image_init( void );
 void rl_image_translate( int x, int y );
 
 /* Creates an image from a rl_imagedata_t. */
-const rl_image_t* rl_image_create( const rl_imagedata_t* imagedata, int check_transp, uint16_t transparent );
+int     rl_image_create( rl_image_t* image, const rl_imagedata_t* imagedata, int check_transp, uint16_t transparent );
 /* Destroys an image. */
-#define rl_image_destroy( image ) do { rl_free( (void*)image->rle ); rl_free( (void*)image ); } while ( 0 )
+#define rl_image_destroy( image ) do { rl_free( (void*)image->rle ); } while ( 0 )
 
 /* Blits an image to the given background. */
-void rl_image_blit_nobg( const rl_image_t* image, int x, int y );
+void      rl_image_blit_nobg( const rl_image_t* image, int x, int y );
 /* Blits an image to the given background, saving overwritten pixels in bg. */
 uint16_t* rl_image_blit( const rl_image_t* image, int x, int y, uint16_t* bg );
 /* Erases an image from the given background, restoring overwritten pixels from bg. */
-void rl_image_unblit( const rl_image_t* image, int x, int y, const uint16_t* bg );
+void      rl_image_unblit( const rl_image_t* image, int x, int y, const uint16_t* bg );
 
 #endif /* RL_IMAGE_H */

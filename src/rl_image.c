@@ -17,40 +17,34 @@ void rl_image_translate( int x, int y )
   tslt_y = y;
 }
 
-const rl_image_t* rl_image_create( const rl_imagedata_t* imagedata, int check_transp, uint16_t transparent )
+int rl_image_create( rl_image_t* image, const rl_imagedata_t* imagedata, int check_transp, uint16_t transparent )
 {
   size_t size;
   const void* data = rl_imagedata_rle_encode( &size, imagedata, check_transp, transparent );
   
   if ( data )
   {
-    rl_image_t* image = (rl_image_t*)rl_malloc( sizeof( rl_image_t ) );
-    
-    if ( image )
+    union
     {
-      union
-      {
-        const void*     v;
-        const uint8_t*  u8;
-        const uint16_t* u16;
-        const uint32_t* u32;
-      }
-      ptr;
-      
-      image->rle = ptr.v = data;
-      
-      image->width  = *ptr.u16++;
-      image->height = *ptr.u16++;
-      image->used   = *ptr.u32++;
-      image->data   = ptr.u8;
-      
-      return image;
+      const void*     v;
+      const uint8_t*  u8;
+      const uint16_t* u16;
+      const uint32_t* u32;
     }
+    ptr;
     
-    rl_free( (void*)data );
+    image->rle = ptr.v = data;
+    
+    image->width  = *ptr.u16++;
+    image->height = *ptr.u16++;
+    image->used   = *ptr.u32++;
+    image->data   = ptr.u8;
+    
+    return 0;
   }
   
-  return NULL;
+  rl_free( (void*)data );
+  return -1;
 }
 
 void rl_image_blit_nobg( const rl_image_t* image, int x, int y )
