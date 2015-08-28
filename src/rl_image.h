@@ -33,8 +33,8 @@ rl_image_t;
 void rl_image_init( void );
 void rl_image_translate( int x, int y );
 
-/* Creates an image from a rl_imagedata_t. */
-int     rl_image_create( rl_image_t* image, const rl_imagedata_t* imagedata, int check_transp, uint16_t transparent );
+/* Creates an image from a rl_imgdata_t. */
+int     rl_image_create( rl_image_t* image, const rl_imgdata_t* imagedata, int check_transp, uint16_t transparent );
 /* Destroys an image. */
 #define rl_image_destroy( image ) do { rl_free( (void*)image->rle ); } while ( 0 )
 
