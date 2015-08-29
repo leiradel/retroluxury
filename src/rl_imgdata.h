@@ -6,19 +6,21 @@
 #include <stdint.h>
 #include <stddef.h>
 
-typedef struct
+typedef struct rl_imgdata_t rl_imgdata_t;
+
+struct rl_imgdata_t
 {
   rl_userdata_t ud;
   
-  int bps;       /* bits per sample */
-  int channels;  /* 1=mono, 2=stereo */
-  int frequency; /* how many pixels to go down to the next line */
+  int width;  /* the image width */
+  int height; /* the image height */
+  int pitch;  /* how many pixels to go down to the next line */
   
-  const void* samples;
-}
-rl_snddata_t;
+  const uint32_t* abgr; /* the ABGR pixels */
+  const rl_imgdata_t* parent; /* the parent if this pixel collection is a sub area of another pixel collection */
+};
 
-const rl_snddata_t* rl_imgdata_create( const void* data, size_t size );
+const rl_imgdata_t* rl_imgdata_create( const void* data, size_t size );
 const rl_imgdata_t* rl_imgdata_sub( const rl_imgdata_t* parent, int x0, int y0, int width, int height );
 void                rl_imgdata_destroy( const rl_imgdata_t* imgdata );
 
