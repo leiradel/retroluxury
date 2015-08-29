@@ -25,6 +25,6 @@ const rl_imgdata_t* rl_imagedata_sub( const rl_imgdata_t* parent, int x0, int y0
 void                  rl_imagedata_destroy( const rl_imgdata_t* imgdata );
 
 uint32_t    rl_imagedata_get_pixel( const rl_imgdata_t* imgdata, int x, int y );
-const void* rl_imagedata_rle_encode( size_t* size, const rl_imgdata_t* imgdata, int check_transp, uint16_t transparent );
+const void* rl_imagedata_encode( size_t* size, const rl_imgdata_t* imgdata, int check_transp, uint16_t transparent );
 
 #endif /* RL_IMGDATA_H */

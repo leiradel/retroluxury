@@ -230,7 +230,7 @@ static size_t rle_row( uint16_t* rle, int* bgcount, const rl_imgdata_t* imgdata,
   return ( rle - start ) * 2;
 }
 
-const void* rl_imagedata_rle_encode( size_t* size, const rl_imgdata_t* imgdata, int check_transp, uint16_t transparent )
+const void* rl_imagedata_encode( size_t* size, const rl_imgdata_t* imgdata, int check_transp, uint16_t transparent )
 {
   int    width = imgdata->width;
   int    height = imgdata->height;
