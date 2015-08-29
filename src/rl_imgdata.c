@@ -13,7 +13,7 @@
 #include "stb_image.h"
 /*---------------------------------------------------------------------------*/
 
-const rl_imgdata_t* rl_imagedata_create( const void* data, size_t size )
+const rl_imgdata_t* rl_imgdata_create( const void* data, size_t size )
 {
   int width, height;
   uint32_t* abgr = (uint32_t*)stbi_load_from_memory( data, size, &width, &height, NULL, STBI_rgb_alpha );
@@ -39,7 +39,7 @@ const rl_imgdata_t* rl_imagedata_create( const void* data, size_t size )
   return NULL;
 }
 
-const rl_imgdata_t* rl_imagedata_sub( const rl_imgdata_t* parent, int x0, int y0, int width, int height )
+const rl_imgdata_t* rl_imgdata_sub( const rl_imgdata_t* parent, int x0, int y0, int width, int height )
 {
   if ( x0 < 0 )
   {
@@ -82,7 +82,7 @@ const rl_imgdata_t* rl_imagedata_sub( const rl_imgdata_t* parent, int x0, int y0
   return NULL;
 }
 
-void rl_imagedata_destroy( const rl_imgdata_t* imgdata )
+void rl_imgdata_destroy( const rl_imgdata_t* imgdata )
 {
   if ( !imgdata->parent )
   {
@@ -92,7 +92,7 @@ void rl_imagedata_destroy( const rl_imgdata_t* imgdata )
   rl_free( (void*)imgdata );
 }
 
-uint32_t rl_imagedata_get_pixel( const rl_imgdata_t* imgdata, int x, int y )
+uint32_t rl_imgdata_get_pixel( const rl_imgdata_t* imgdata, int x, int y )
 {
   if ( x >= 0 && x < imgdata->width && y >= 0 && imgdata->height )
   {
@@ -113,7 +113,7 @@ static inline uint16_t rgb24_to_rgb16( int r, int g, int b )
 
 static inline uint16_t get_pixel( int* alpha, const rl_imgdata_t* imgdata, int x, int y, int check_transp, uint16_t transparent )
 {
-  uint32_t abgr32 = rl_imagedata_get_pixel( imgdata, x, y );
+  uint32_t abgr32 = rl_imgdata_get_pixel( imgdata, x, y );
   int      a = abgr32 >> 24;
   int      b = ( abgr32 >> 16 ) & 255;
   int      g = ( abgr32 >> 8 ) & 255;
@@ -230,7 +230,7 @@ static size_t rle_row( uint16_t* rle, int* bgcount, const rl_imgdata_t* imgdata,
   return ( rle - start ) * 2;
 }
 
-const void* rl_imagedata_encode( size_t* size, const rl_imgdata_t* imgdata, int check_transp, uint16_t transparent )
+const void* rl_imgdata_encode( size_t* size, const rl_imgdata_t* imgdata, int check_transp, uint16_t transparent )
 {
   int    width = imgdata->width;
   int    height = imgdata->height;
