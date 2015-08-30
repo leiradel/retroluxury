@@ -17,10 +17,10 @@ void rl_image_translate( int x, int y )
   tslt_y = y;
 }
 
-int rl_image_create( rl_image_t* image, const rl_imgdata_t* imagedata, int check_transp, uint16_t transparent )
+int rl_image_create( rl_image_t* image, const rl_imgdata_t* imgdata, int check_transp, uint16_t transparent )
 {
   size_t size;
-  const void* data = rl_imgdata_encode( &size, imagedata, check_transp, transparent );
+  const void* data = rl_imgdata_encode( &size, imgdata, check_transp, transparent );
   
   if ( data )
   {

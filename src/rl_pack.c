@@ -13,14 +13,14 @@ rl_entry_t* rl_find_entry( void* data, const char* name )
   {
     if ( isle() )
     {
-      header->num_entries = ne32( header->num_entries );
+      header->num_entries = be32( header->num_entries );
       
       for ( uint32_t i = 0; i < header->num_entries; i++ )
       {
-        header->entries[ i ].name_hash     = ne32( header->entries[ i ].name_hash );
-        header->entries[ i ].name_offset   = ne32( header->entries[ i ].name_offset );
-        header->entries[ i ].data_offset   = ne32( header->entries[ i ].data_offset );
-        header->entries[ i ].data_size     = ne32( header->entries[ i ].data_size );
+        header->entries[ i ].name_hash     = be32( header->entries[ i ].name_hash );
+        header->entries[ i ].name_offset   = be32( header->entries[ i ].name_offset );
+        header->entries[ i ].data_offset   = be32( header->entries[ i ].data_offset );
+        header->entries[ i ].data_size     = be32( header->entries[ i ].data_size );
         header->entries[ i ].runtime_flags = 0;
       }
     }

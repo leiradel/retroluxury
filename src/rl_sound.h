@@ -2,6 +2,7 @@
 #define RL_SOUND_H
 
 #include <rl_userdata.h>
+#include <rl_snddata.h>
 
 #include <stdint.h>
 #include <stddef.h>
@@ -19,7 +20,8 @@ typedef struct
   rl_userdata_t ud;
   int           samples;
   int           stereo;
-  const int16_t pcm[ 0 ];
+  
+  const int16_t* pcm;
 }
 rl_sound_t;
 
@@ -35,8 +37,8 @@ typedef void ( *rl_soundstop_t )( rl_voice_t* voice, int reason );
 void rl_sound_init( void );
 void rl_sound_done( void );
 
-rl_sound_t* rl_sound_create( const void* data, size_t size, int stereo );
-#define     rl_sound_destroy( sound ) do { rl_free( sound ); } while ( 0 )
+int     rl_sound_create( rl_sound_t* sound, const rl_snddata_t* snddata );
+#define rl_sound_destroy( sound ) do { rl_free( (void*)sound->pcm ); } while ( 0 )
 
 rl_voice_t* rl_sound_play( const rl_sound_t* sound, int repeat, rl_soundstop_t stop_cb );
 void        rl_sound_stop( rl_voice_t* voice );

@@ -13,33 +13,26 @@
 #include "stb_image.h"
 /*---------------------------------------------------------------------------*/
 
-const rl_imgdata_t* rl_imgdata_create( const void* data, size_t size )
+int rl_imgdata_create( rl_imgdata_t* imgdata, const void* data, size_t size )
 {
   int width, height;
   uint32_t* abgr = (uint32_t*)stbi_load_from_memory( data, size, &width, &height, NULL, STBI_rgb_alpha );
   
   if ( abgr )
   {
-    rl_imgdata_t* imgdata = (rl_imgdata_t*)rl_malloc( sizeof( rl_imgdata_t ) );
+    imgdata->width = width;
+    imgdata->height = height;
+    imgdata->pitch = width;
+    imgdata->abgr = abgr;
+    imgdata->parent = NULL;
     
-    if ( imgdata )
-    {
-      imgdata->width = width;
-      imgdata->height = height;
-      imgdata->pitch = width;
-      imgdata->abgr = abgr;
-      imgdata->parent = NULL;
-      
-      return imgdata;
-    }
-    
-    rl_free( abgr );
+    return 0;
   }
   
-  return NULL;
+  return -1;
 }
 
-const rl_imgdata_t* rl_imgdata_sub( const rl_imgdata_t* parent, int x0, int y0, int width, int height )
+int rl_imgdata_sub( rl_imgdata_t* imgdata, const rl_imgdata_t* parent, int x0, int y0, int width, int height )
 {
   if ( x0 < 0 )
   {
@@ -65,21 +58,16 @@ const rl_imgdata_t* rl_imgdata_sub( const rl_imgdata_t* parent, int x0, int y0, 
   
   if ( width > 0 && height > 0 )
   {
-    rl_imgdata_t* imgdata = (rl_imgdata_t*)rl_malloc( sizeof( rl_imgdata_t ) );
+    imgdata->width = width;
+    imgdata->height = height;
+    imgdata->pitch = parent->pitch;
+    imgdata->abgr = parent->abgr + y0 * parent->pitch + x0;
+    imgdata->parent = parent;
     
-    if ( imgdata )
-    {
-      imgdata->width = width;
-      imgdata->height = height;
-      imgdata->pitch = parent->pitch;
-      imgdata->abgr = parent->abgr + y0 * parent->pitch + x0;
-      imgdata->parent = parent;
-      
-      return imgdata;
-    }
+    return 0;
   }
   
-  return NULL;
+  return -1;
 }
 
 void rl_imgdata_destroy( const rl_imgdata_t* imgdata )
@@ -88,8 +76,6 @@ void rl_imgdata_destroy( const rl_imgdata_t* imgdata )
   {
     rl_free( (void*)imgdata->abgr );
   }
-  
-  rl_free( (void*)imgdata );
 }
 
 uint32_t rl_imgdata_get_pixel( const rl_imgdata_t* imgdata, int x, int y )

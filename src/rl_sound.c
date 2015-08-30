@@ -89,38 +89,22 @@ void rl_sound_done( void )
 #endif
 }
 
-rl_sound_t* rl_sound_create( const void* data, size_t size, int stereo )
+int rl_sound_create( rl_sound_t* sound, const rl_snddata_t* snddata )
 {
-  union
-  {
-    const void*     restrict v;
-    const uint16_t* restrict u16;
-  }
-  ptr;
+  size_t size;
+  int stereo;
+  const void* data = rl_snddata_encode( &size, &stereo, snddata );
   
-  rl_sound_t* sound = (rl_sound_t*)rl_malloc( sizeof( rl_sound_t ) + size );
-  
-  if ( sound )
+  if ( data )
   {
-    size /= 2;
+    sound->samples = size / 2;
+    sound->stereo = stereo;
+    sound->pcm = (const int16_t*)data;
     
-    sound->samples = size;
-    sound->stereo  = stereo;
-    
-    uint16_t* restrict pcm = (uint16_t*)( (uint8_t*)sound + sizeof( *sound ) );
-    ptr.v = data;
-    
-    const uint16_t* restrict end = pcm + size;
-    
-    while ( pcm < end )
-    {
-      *pcm++ = ne16( *ptr.u16++ );
-    }
-    
-    return sound;
+    return 0;
   }
   
-  return NULL;
+  return -1;
 }
 
 rl_voice_t* rl_sound_play( const rl_sound_t* sound, int repeat, rl_soundstop_t stop_cb )
