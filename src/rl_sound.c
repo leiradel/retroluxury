@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <math.h>
 
-#include <rl_endian.c>
+#include <rl_endian.inl>
 
 /*---------------------------------------------------------------------------*/
 #ifdef RL_OGG_VORBIS

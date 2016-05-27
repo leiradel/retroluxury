@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <rl_endian.c>
+#include <rl_endian.inl>
 
 typedef struct
 {

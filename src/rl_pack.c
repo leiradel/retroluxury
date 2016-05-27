@@ -2,8 +2,8 @@
 
 #include <string.h>
 
-#include <rl_endian.c>
-#include <rl_hash.c>
+#include <rl_endian.inl>
+#include <rl_hash.inl>
 
 rl_entry_t* rl_find_entry( void* data, const char* name )
 {
