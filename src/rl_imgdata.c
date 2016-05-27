@@ -10,7 +10,7 @@
 #define STBI_FREE rl_free
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "external/stb_image.h"
 /*---------------------------------------------------------------------------*/
 
 int rl_imgdata_create( rl_imgdata_t* imgdata, const void* data, size_t size )

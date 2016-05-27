@@ -33,7 +33,7 @@
 #define __forceinline __inline__ __attribute__((__always_inline__,__gnu_inline__))
 #endif
 
-#include <stb_vorbis.c>
+#include "external/stb_vorbis.c"
 
 #endif
 /*---------------------------------------------------------------------------*/
