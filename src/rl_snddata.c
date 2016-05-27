@@ -57,7 +57,7 @@ int rl_snddata_create( rl_snddata_t* snddata, const void* data, size_t size )
   snddata->channels = le16( wave->numchannels );
   snddata->freq = le32( wave->samplerate );
   
-  if ( le16( wave->audioformat ) != 1 || snddata->freq != 44100 )
+  if ( le16( wave->audioformat ) != 1 || snddata->freq != RL_SAMPLE_RATE )
   {
     return -1;
   }

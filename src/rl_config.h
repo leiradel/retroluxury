@@ -19,6 +19,9 @@ value must be used when rle-encoding images with rlrle.lua.
 #define RL_BG_SAVE_SIZE ( 64 * 1024 )
 #endif
 
+/* The frequency of the mixed sound. */
+#define RL_SAMPLE_RATE 44100
+
 /* The maximum number of simultaneous *playing* sounds. */
 #ifndef RL_MAX_VOICES
 #define RL_MAX_VOICES 8
