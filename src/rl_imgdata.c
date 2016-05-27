@@ -80,7 +80,7 @@ void rl_imgdata_destroy( const rl_imgdata_t* imgdata )
 
 uint32_t rl_imgdata_get_pixel( const rl_imgdata_t* imgdata, int x, int y )
 {
-  if ( x >= 0 && x < imgdata->width && y >= 0 && imgdata->height )
+  if ( x >= 0 && x < imgdata->width && y >= 0 && y < imgdata->height )
   {
     return imgdata->abgr[ y * imgdata->pitch + x ];
   }
