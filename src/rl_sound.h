@@ -7,9 +7,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-/* Number of 16-bit stereo samples per frame. DO NOT CHANGE! */
-#define RL_SAMPLES_PER_FRAME ( RL_SAMPLE_RATE / RL_FRAME_RATE )
-
 /* Reasons passed to the stop callback. */
 #define RL_SOUND_FINISHED 0
 #define RL_SOUND_STOPPED  1

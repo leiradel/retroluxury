@@ -209,17 +209,21 @@ void retro_set_input_poll( retro_input_poll_t cb )
 
 void retro_get_system_av_info( struct retro_system_av_info* info )
 {
+  const rl_config_t* config = rl_get_config();
+  
   info->geometry.base_width = WIDTH;
   info->geometry.base_height = HEIGHT;
   info->geometry.max_width = WIDTH;
   info->geometry.max_height = HEIGHT;
   info->geometry.aspect_ratio = 0.0f;
-  info->timing.fps = 60.0;
-  info->timing.sample_rate = RL_SAMPLE_RATE;
+  info->timing.fps = config->frame_rate;
+  info->timing.sample_rate = config->sample_rate;
 }
 
 void retro_run( void )
 {
+  const rl_config_t* config = rl_get_config();
+  
   input_poll_cb();
   
   unsigned width = WIDTH - state.imgdata.width;
@@ -255,10 +259,10 @@ void retro_run( void )
   }
   
   rl_sprites_blit();
-  video_cb( (void*)rl_backgrnd_fb( NULL, NULL ), WIDTH, HEIGHT, ( WIDTH + RL_BACKGRND_MARGIN ) * 2 );
+  video_cb( (void*)rl_backgrnd_fb( NULL, NULL ), WIDTH, HEIGHT, ( WIDTH + config->backgrnd_margin ) * 2 );
   rl_sprites_unblit();
   
-  audio_cb( rl_sound_mix(), RL_SAMPLES_PER_FRAME );
+  audio_cb( rl_sound_mix(), config->samples_per_frame );
 }
 
 void retro_deinit( void )

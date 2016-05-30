@@ -1,6 +1,10 @@
 #ifndef RL_CONFIG_H
 #define RL_CONFIG_H
 
+/* retroluxury version. */
+#define RL_VERSION_MAJOR 1
+#define RL_VERSION_MINOR 0
+
 /*
 The margin to use when blitting sprites, must be a power of 2. The exact same
 value must be used when rle-encoding images with rlrle.lua.
@@ -29,6 +33,9 @@ value must be used when rle-encoding images with rlrle.lua.
 #define RL_SAMPLE_RATE 44100
 #endif
 
+/* Number of 16-bit stereo samples per frame. DO NOT CHANGE! */
+#define RL_SAMPLES_PER_FRAME ( RL_SAMPLE_RATE / RL_FRAME_RATE )
+
 /* The quality to use with the resampler [0, 10]. */
 #define RL_RESAMPLER_QUALITY 4
 
@@ -49,5 +56,26 @@ value must be used when rle-encoding images with rlrle.lua.
 #ifndef RL_USERDATA_COUNT
 #define RL_USERDATA_COUNT 4
 #endif
+
+typedef struct
+{
+  unsigned version_major;
+  unsigned version_minor;
+  unsigned backgrnd_margin;
+  unsigned max_sprites;
+  unsigned bg_save_size;
+  unsigned frame_rate;
+  unsigned sample_rate;
+  unsigned samples_per_frame;
+  unsigned resampler_quality;
+  unsigned max_voices;
+  unsigned ogg_increment;
+  unsigned ogg_vorbis; /* != 0 if compiled with ogg vorbis support */
+  unsigned userdata_count;
+}
+rl_config_t;
+
+/* Do *not* use the macros above, use this function to retrieve the runtime values. */
+const rl_config_t* rl_get_config( void );
 
 #endif /* RL_CONFIG_H */
