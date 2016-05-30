@@ -1,14 +1,9 @@
 #include <rl_imgdata.h>
-#include <rl_memory.h>
 
 /*---------------------------------------------------------------------------*/
 /* stb_image config and inclusion */
 
 #define STBI_ASSERT( x )
-#define STBI_MALLOC rl_malloc
-#define STBI_REALLOC rl_realloc
-#define STBI_FREE rl_free
-
 #define STB_IMAGE_IMPLEMENTATION
 #include "external/stb_image.h"
 /*---------------------------------------------------------------------------*/
@@ -74,7 +69,7 @@ void rl_imgdata_destroy( const rl_imgdata_t* imgdata )
 {
   if ( !imgdata->parent )
   {
-    rl_free( (void*)imgdata->abgr );
+    free( (void*)imgdata->abgr );
   }
 }
 
@@ -228,7 +223,7 @@ const void* rl_imgdata_encode( size_t* size, const rl_imgdata_t* imgdata, int ch
     total += rle_row( NULL, &bgcount, imgdata, y, check_transp, transparent );
   }
   
-  void* rle = rl_malloc(
+  void* rle = malloc(
     sizeof( uint16_t ) +          /* width */
     sizeof( uint16_t ) +          /* height */
     sizeof( uint32_t ) +          /* bgcount */

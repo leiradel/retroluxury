@@ -20,7 +20,7 @@ typedef struct
 rl_snddata_t;
 
 int     rl_snddata_create( rl_snddata_t* snddata, const void* data, size_t size );
-#define rl_snddata_destroy( snddata ) do { rl_free( (void*)( snddata )->samples ); } while ( 0 )
+#define rl_snddata_destroy( snddata ) do { free( (void*)( snddata )->samples ); } while ( 0 )
 
 const int16_t* rl_snddata_encode( size_t* out_samples, const rl_snddata_t* snddata );
 

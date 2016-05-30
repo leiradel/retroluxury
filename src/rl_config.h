@@ -50,9 +50,4 @@ value must be used when rle-encoding images with rlrle.lua.
 #define RL_USERDATA_COUNT 4
 #endif
 
-/* Undef to use custom memory functions. */
-#define rl_malloc  malloc
-#define rl_realloc realloc
-#define rl_free    free
-
 #endif /* RL_CONFIG_H */

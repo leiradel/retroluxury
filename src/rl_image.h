@@ -36,7 +36,7 @@ void rl_image_translate( int x, int y );
 /* Creates an image from a rl_imgdata_t. */
 int     rl_image_create( rl_image_t* image, const rl_imgdata_t* imgdata, int check_transp, uint16_t transparent );
 /* Destroys an image. */
-#define rl_image_destroy( image ) do { rl_free( (void*)( image )->rle ); } while ( 0 )
+#define rl_image_destroy( image ) do { free( (void*)( image )->rle ); } while ( 0 )
 
 /* Blits an image to the given background. */
 void      rl_image_blit_nobg( const rl_image_t* image, int x, int y );

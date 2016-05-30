@@ -1,7 +1,8 @@
 #include <string.h>
 #include <rl_backgrnd.h>
-#include <rl_memory.h>
 #include <rl_config.h>
+
+#include <stdlib.h>
 
 static uint16_t* pixels;
 static int       width, height;
@@ -11,7 +12,7 @@ int rl_backgrnd_create( int w, int h, int aspect )
 {
   if ( aspect == RL_BACKGRND_EXACT )
   {
-    pixels = (uint16_t*)rl_malloc( ( ( w + RL_BACKGRND_MARGIN ) * h + RL_BACKGRND_MARGIN ) * sizeof( uint16_t ) );
+    pixels = (uint16_t*)malloc( ( ( w + RL_BACKGRND_MARGIN ) * h + RL_BACKGRND_MARGIN ) * sizeof( uint16_t ) );
     
     if ( pixels )
     {
@@ -28,7 +29,7 @@ int rl_backgrnd_create( int w, int h, int aspect )
 
 void rl_backgrnd_destroy( void )
 {
-  rl_free( pixels );
+  free( pixels );
 }
 
 void rl_backgrnd_clear( uint16_t color )

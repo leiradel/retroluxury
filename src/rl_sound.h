@@ -37,7 +37,7 @@ void rl_sound_init( void );
 void rl_sound_done( void );
 
 int     rl_sound_create( rl_sound_t* sound, const rl_snddata_t* snddata );
-#define rl_sound_destroy( sound ) do { rl_free( (void*)( sound )->pcm ); } while ( 0 )
+#define rl_sound_destroy( sound ) do { free( (void*)( sound )->pcm ); } while ( 0 )
 
 rl_voice_t* rl_sound_play( const rl_sound_t* sound, int repeat, rl_soundstop_t stop_cb );
 void        rl_sound_stop( rl_voice_t* voice );

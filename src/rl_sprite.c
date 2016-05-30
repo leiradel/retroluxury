@@ -1,5 +1,4 @@
 #include <rl_sprite.h>
-#include <rl_memory.h>
 #include <rl_config.h>
 
 #include <stdlib.h>

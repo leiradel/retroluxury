@@ -1,6 +1,6 @@
 #include <rl_resample.h>
-#include <rl_memory.h>
 
+#include <stdlib.h>
 #include <string.h>
 
 /*---------------------------------------------------------------------------*/

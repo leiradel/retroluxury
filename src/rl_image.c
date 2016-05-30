@@ -1,7 +1,7 @@
 #include <rl_image.h>
-#include <rl_memory.h>
 #include <rl_backgrnd.h>
 
+#include <stdlib.h>
 #include <string.h>
 
 static int tslt_x, tslt_y;
@@ -43,7 +43,7 @@ int rl_image_create( rl_image_t* image, const rl_imgdata_t* imgdata, int check_t
     return 0;
   }
   
-  rl_free( (void*)data );
+  free( (void*)data );
   return -1;
 }
 

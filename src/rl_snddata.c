@@ -1,7 +1,7 @@
 #include <rl_snddata.h>
 #include <rl_resample.h>
-#include <rl_memory.h>
 
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -74,7 +74,7 @@ int rl_snddata_create( rl_snddata_t* snddata, const void* data, size_t size )
   }
   
   snddata->size = le32( wave->subchunk2size );
-  snddata->samples = rl_malloc( snddata->size );
+  snddata->samples = malloc( snddata->size );
   
   if ( snddata->samples )
   {
@@ -97,7 +97,7 @@ const int16_t* rl_snddata_encode( size_t* out_samples, const rl_snddata_t* sndda
       /* 8 bps, mono. */
       in_samples = snddata->size;
       *out_samples = in_samples * 2;
-      out_buffer = (int16_t*)rl_malloc( *out_samples * sizeof( int16_t ) );
+      out_buffer = (int16_t*)malloc( *out_samples * sizeof( int16_t ) );
       
       if ( !out_buffer )
       {
@@ -121,7 +121,7 @@ const int16_t* rl_snddata_encode( size_t* out_samples, const rl_snddata_t* sndda
       /* 8 bps, stereo. */
       in_samples = snddata->size;
       *out_samples = in_samples;
-      out_buffer = (int16_t*)rl_malloc( *out_samples * sizeof( int16_t ) );
+      out_buffer = (int16_t*)malloc( *out_samples * sizeof( int16_t ) );
       
       if ( !out_buffer )
       {
@@ -147,7 +147,7 @@ const int16_t* rl_snddata_encode( size_t* out_samples, const rl_snddata_t* sndda
       /* 16 bps, mono. */
       in_samples = snddata->size / 2;
       *out_samples = in_samples * 2;
-      out_buffer = (int16_t*)rl_malloc( *out_samples * sizeof( int16_t ) );
+      out_buffer = (int16_t*)malloc( *out_samples * sizeof( int16_t ) );
       
       if ( !out_buffer )
       {
@@ -170,7 +170,7 @@ const int16_t* rl_snddata_encode( size_t* out_samples, const rl_snddata_t* sndda
       /* 16 bps, stereo. */
       in_samples = snddata->size / 2;
       *out_samples = in_samples;
-      out_buffer = (int16_t*)rl_malloc( *out_samples * sizeof( int16_t ) );
+      out_buffer = (int16_t*)malloc( *out_samples * sizeof( int16_t ) );
       
       if ( !out_buffer )
       {
@@ -194,29 +194,29 @@ const int16_t* rl_snddata_encode( size_t* out_samples, const rl_snddata_t* sndda
     
     if ( !resampler )
     {
-      rl_free( out_buffer );
+      free( out_buffer );
       return NULL;
     }
     
     size_t new_samples = rl_resampler_out_samples( resampler, *out_samples );
-    int16_t* new_buffer = (int16_t*)rl_malloc( new_samples * sizeof( int16_t ) );
+    int16_t* new_buffer = (int16_t*)malloc( new_samples * sizeof( int16_t ) );
     
     if ( !new_buffer )
     {
       rl_resampler_destroy( resampler );
-      rl_free( out_buffer );
+      free( out_buffer );
       return NULL;
     }
     
     if ( rl_resampler_resample( resampler, out_buffer, *out_samples, new_buffer, new_samples ) != new_samples )
     {
-      rl_free( new_buffer );
+      free( new_buffer );
       rl_resampler_destroy( resampler );
-      rl_free( out_buffer );
+      free( out_buffer );
       return NULL;
     }
     
-    rl_free( out_buffer );
+    free( out_buffer );
     out_buffer = new_buffer;
     *out_samples = new_samples;
   }
