@@ -1,9 +1,10 @@
 INCLUDES=-I.
-DEFINES=
+DEFINES=-DOUTSIDE_SPEEX -DRANDOM_PREFIX=speex -DEXPORT= -DFIXED_POINT
 
-CFLAGS=-m32 -O3 --std=c99 $(INCLUDES) $(DEFINES)
+#CFLAGS=-O3 --std=c99 -Wall $(INCLUDES) $(DEFINES)
+CFLAGS=-O0 -g --std=c99 -Wall $(INCLUDES) $(DEFINES)
 
-OBJS=rl_backgrnd.o rl_image.o rl_imgdata.o rl_pack.o rl_rand.o rl_sound.o rl_snddata.o rl_sprite.o rl_version.o rl_xml.o
+OBJS=rl_backgrnd.o rl_image.o rl_imgdata.o rl_pack.o rl_rand.o rl_resample.o rl_sound.o rl_snddata.o rl_sprite.o rl_version.o rl_xml.o external/resample.o
 
 %.o: %.c
 	gcc $(CFLAGS) -c $< -o $@

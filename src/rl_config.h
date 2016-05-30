@@ -19,8 +19,18 @@ value must be used when rle-encoding images with rlrle.lua.
 #define RL_BG_SAVE_SIZE ( 64 * 1024 )
 #endif
 
+/* The number of video frames per second. */
+#ifndef RL_FRAME_RATE
+#define RL_FRAME_RATE 60
+#endif
+
 /* The frequency of the mixed sound. */
+#ifndef RL_SAMPLE_RATE
 #define RL_SAMPLE_RATE 44100
+#endif
+
+/* The quality to use with the resampler [0, 10]. */
+#define RL_RESAMPLER_QUALITY 4
 
 /* The maximum number of simultaneous *playing* sounds. */
 #ifndef RL_MAX_VOICES

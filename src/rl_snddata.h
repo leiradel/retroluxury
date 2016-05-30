@@ -4,6 +4,7 @@
 #include <rl_userdata.h>
 
 #include <stddef.h>
+#include <stdint.h>
 
 typedef struct
 {
@@ -19,8 +20,8 @@ typedef struct
 rl_snddata_t;
 
 int     rl_snddata_create( rl_snddata_t* snddata, const void* data, size_t size );
-#define rl_snddata_destroy( snddata ) do { rl_free( (void*)snddata->samples ); } while ( 0 )
+#define rl_snddata_destroy( snddata ) do { rl_free( (void*)( snddata )->samples ); } while ( 0 )
 
-const void* rl_snddata_encode( size_t* size, int* stereo, const rl_snddata_t* snddata );
+const int16_t* rl_snddata_encode( size_t* out_samples, const rl_snddata_t* snddata );
 
 #endif /* RL_SNDDATA_H */

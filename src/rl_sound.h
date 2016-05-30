@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 /* Number of 16-bit stereo samples per frame. DO NOT CHANGE! */
-#define RL_SAMPLES_PER_FRAME 735
+#define RL_SAMPLES_PER_FRAME ( RL_SAMPLE_RATE / RL_FRAME_RATE )
 
 /* Reasons passed to the stop callback. */
 #define RL_SOUND_FINISHED 0
@@ -19,7 +19,6 @@ typedef struct
 {
   rl_userdata_t ud;
   int           samples;
-  int           stereo;
   
   const int16_t* pcm;
 }
@@ -38,7 +37,7 @@ void rl_sound_init( void );
 void rl_sound_done( void );
 
 int     rl_sound_create( rl_sound_t* sound, const rl_snddata_t* snddata );
-#define rl_sound_destroy( sound ) do { rl_free( (void*)sound->pcm ); } while ( 0 )
+#define rl_sound_destroy( sound ) do { rl_free( (void*)( sound )->pcm ); } while ( 0 )
 
 rl_voice_t* rl_sound_play( const rl_sound_t* sound, int repeat, rl_soundstop_t stop_cb );
 void        rl_sound_stop( rl_voice_t* voice );
