@@ -3,8 +3,9 @@
 /*---------------------------------------------------------------------------*/
 /* stb_image config and inclusion */
 
-#define STBI_ASSERT( x )
 #define STB_IMAGE_IMPLEMENTATION
+#define STBI_ASSERT( x )
+#define STBI_NO_STDIO
 #include "external/stb_image.h"
 /*---------------------------------------------------------------------------*/
 

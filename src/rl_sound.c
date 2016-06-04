@@ -12,11 +12,12 @@
 /*---------------------------------------------------------------------------*/
 #ifdef RL_OGG_VORBIS
 
-#define STB_VORBIS_NO_CRT
-#define STB_VORBIS_NO_STDIO
 #define STB_VORBIS_NO_PUSHDATA_API
+#define STB_VORBIS_NO_STDIO
+#define STB_VORBIS_NO_CRT
 
 #define assert( x )
+#undef NULL
 
 // #define pow     pow
 // #define floor   floor
@@ -26,8 +27,6 @@
 #undef __forceinline
 #define __forceinline __inline__ __attribute__((__always_inline__,__gnu_inline__))
 #endif
-
-#undef NULL
 
 #include "external/stb_vorbis.c"
 
