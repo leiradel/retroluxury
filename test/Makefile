@@ -3,8 +3,8 @@ TARGET=test$(SOEXT)
 OBJEXT=.o
 CC=gcc
 CXX=g++
-#CCFLAGS=-Wall -O2 -I. -I../src
-CCFLAGS=-Wall -O0 -g -I. -I../src
+#CCFLAGS=-Wall -O2 --std=c99 -I. -I../src -fPIC
+CCFLAGS=-Wall -O0 -g --std=c99 -I. -I../src -fPIC
 CXXFLAGS=$(CCFLAGS)
 LDFLAGS=-L../src
 LIBS=-lretroluxury
