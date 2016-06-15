@@ -1,6 +1,6 @@
 #include <rl_base64.h>
 
-size_t rl_base64_decode_inplace( void* buffer, size_t length )
+size_t rl_base64_decode( const void* buffer, size_t length, void* output )
 {
   static const uint8_t values[] =
   {
@@ -24,7 +24,7 @@ size_t rl_base64_decode_inplace( void* buffer, size_t length )
   
   size_t rest = length % 4;
   length -= rest;
-  uint8_t* bin = (uint8_t*)buffer;
+  uint8_t* bin = (uint8_t*)output;
   const uint8_t* digits = (uint8_t*)buffer;
   const uint8_t* end = digits + length;
   uint8_t d0, d1, d2, d3;
@@ -88,5 +88,5 @@ size_t rl_base64_decode_inplace( void* buffer, size_t length )
   
   /* rest == 1 --> One character remaining without padding (invalid). */
   
-  return bin - (uint8_t*)buffer;
+  return bin - (uint8_t*)output;
 }
