@@ -60,6 +60,9 @@ void retro_get_system_info( struct retro_system_info* info )
 void retro_set_environment( retro_environment_t cb )
 {
   env_cb = cb;
+  
+  bool yes = true;
+  cb( RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &yes );
 }
 
 unsigned retro_api_version( void )
@@ -211,9 +214,9 @@ void retro_get_system_av_info( struct retro_system_av_info* info )
 {
   const rl_config_t* config = rl_get_config();
   
-  info->geometry.base_width = WIDTH;
+  info->geometry.base_width = WIDTH + config->backgrnd_margin;
   info->geometry.base_height = HEIGHT;
-  info->geometry.max_width = WIDTH;
+  info->geometry.max_width = WIDTH + config->backgrnd_margin;
   info->geometry.max_height = HEIGHT;
   info->geometry.aspect_ratio = 0.0f;
   info->timing.fps = config->frame_rate;
