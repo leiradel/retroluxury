@@ -1,4 +1,5 @@
 #include <rl_base64.h>
+#include <stddef.h>
 
 size_t rl_base64_decode_inplace( void* buffer, size_t length )
 {
