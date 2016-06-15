@@ -7,7 +7,8 @@
 //#define RL_BACKGRND_STRETCH 1
 //#define RL_BACKGRND_EXPAND  2
 
-#define RL_COLOR( r, g, b ) ( ( r * 32 / 256 ) << 11 | ( g * 64 / 256 ) << 5 | ( b * 32 / 256 ) )
+#define RL_COLOR( r, g, b ) ( ( ( r ) * 32 / 256 ) << 11 | ( ( g ) * 64 / 256 ) << 5 | ( ( b ) * 32 / 256 ) )
+#define RL_COLOR_2( rgb ) RL_COLOR( ( rgb >> 16 ) & 255, ( rgb >> 8 ) & 255, rgb & 255 )
 
 int  rl_backgrnd_create( int width, int height, int aspect );
 void rl_backgrnd_destroy( void );

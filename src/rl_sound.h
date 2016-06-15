@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 /* Reasons passed to the stop callback. */
 #define RL_SOUND_FINISHED 0

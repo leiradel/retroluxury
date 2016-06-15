@@ -5,6 +5,7 @@
 #include <rl_imgdata.h>
 
 #include <stdint.h>
+#include <stdlib.h>
 
 /*
 An image with RLE-encoded pixels and per-pixel alpha of 0, 25, 50, 75 and 100%.
