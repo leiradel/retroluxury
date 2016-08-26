@@ -214,7 +214,7 @@ void retro_get_system_av_info( struct retro_system_av_info* info )
 {
   const rl_config_t* config = rl_get_config();
   
-  info->geometry.base_width = WIDTH + config->backgrnd_margin;
+  info->geometry.base_width = WIDTH;
   info->geometry.base_height = HEIGHT;
   info->geometry.max_width = WIDTH + config->backgrnd_margin;
   info->geometry.max_height = HEIGHT;
