@@ -10,11 +10,11 @@
 typedef struct
 {
   /* header */
-  char     chunkid[ 4 ];
+  uint8_t  chunkid[ 4 ];
   uint32_t chunksize;
-  char     format[ 4 ];
+  uint8_t  format[ 4 ];
   /* fmt */
-  char     subchunk1id[ 4 ];
+  uint8_t  subchunk1id[ 4 ];
   uint32_t subchunk1size;
   uint16_t audioformat;
   uint16_t numchannels;
@@ -23,7 +23,7 @@ typedef struct
   uint16_t blockalign;
   uint16_t bitspersample;
   /* data */
-  char     subchunk2id[ 4 ];
+  uint8_t  subchunk2id[ 4 ];
   uint32_t subchunk2size;
   uint8_t  data[ 0 ];
   

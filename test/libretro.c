@@ -28,8 +28,7 @@ typedef struct
   rl_imgdata_t imgdata;
   rl_image_t   image;
   smile_t      smiles[ COUNT ];
-  rl_voice_t*  music;
-  rl_snddata_t snddata;
+  rl_sound_t   music;
   rl_sound_t   sound;
 }
 state_t;
@@ -148,30 +147,19 @@ error3:
     state.smiles[ i ].dy = rand() & 1 ? -1 : 1;
   }
 
-  state.music = rl_sound_play_ogg( res_sketch008_ogg, sizeof( res_sketch008_ogg ), 1, NULL );
-
-  if ( state.music == NULL )
+  if ( rl_sound_create_ogg( &state.music, res_sketch008_ogg, sizeof( res_sketch008_ogg ) ) != 0 )
   {
     log_cb( RETRO_LOG_ERROR, "Error loading music sketch008.ogg\n" );
     goto error3;
   }
-
-  if ( rl_snddata_create( &state.snddata, res_bounce_wav, sizeof( res_bounce_wav ) ) != 0 )
+  
+  if ( rl_sound_create_wav( &state.sound, res_bounce_wav, sizeof( res_bounce_wav ) ) != 0 )
   {
     log_cb( RETRO_LOG_ERROR, "Error loading wave bounce.wav\n" );
-error4:
-    rl_sound_stop( state.music );
     goto error3;
   }
-
-  if ( rl_sound_create( &state.sound, &state.snddata ) != 0 )
-  {
-    log_cb( RETRO_LOG_ERROR, "Error creating PCM data\n" );
-//error5:
-    rl_snddata_destroy( &state.snddata );
-    goto error4;
-  }
-
+  
+  rl_sound_play( &state.music, 1, NULL );
   return true;
 }
 
@@ -329,8 +317,7 @@ bool retro_load_game_special( unsigned a, const struct retro_game_info* b, size_
 void retro_unload_game( void )
 {
   rl_sound_destroy( &state.sound );
-  rl_snddata_destroy( &state.snddata );
-  rl_sound_stop( state.music );
+  rl_sound_destroy( &state.music );
 
   for ( unsigned i = 0; i < COUNT; i++ )
   {
