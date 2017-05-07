@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <libretro.h>
 
+#include <rl_pack.h>
 #include <rl_backgrnd.h>
 #include <rl_imgdata.h>
 #include <rl_image.h>
@@ -8,13 +9,11 @@
 #include <rl_snddata.h>
 #include <rl_sound.h>
 
-#include "res/smile.h"
-#include "res/sketch008.h"
-#include "res/bounce.h"
+#include "pack.h"
 
 #define WIDTH  320
 #define HEIGHT 240
-#define COUNT  RL_MAX_VOICES
+#define COUNT  ( RL_MAX_VOICES - 1 )
 
 typedef struct
 {
@@ -25,11 +24,13 @@ smile_t;
 
 typedef struct
 {
+  rl_pack_t    pack;
   rl_imgdata_t imgdata;
   rl_image_t   image;
   smile_t      smiles[ COUNT ];
   rl_sound_t   music;
   rl_sound_t   sound;
+  rl_entry_t   music_data;
 }
 state_t;
 
@@ -99,21 +100,39 @@ bool retro_load_game( const struct retro_game_info* info )
   }
 
   rl_backgrnd_clear( RL_COLOR( 64, 64, 64 ) );
-
-  if ( rl_imgdata_create( &state.imgdata, res_smile_png, sizeof( res_smile_png ) ) != 0 )
+  
+  if ( rl_pack_create( &state.pack, (const void*)pack_tar, sizeof( pack_tar ) ) != 0 )
   {
-    log_cb( RETRO_LOG_ERROR, "Error loading image smile.png\n" );
+    log_cb( RETRO_LOG_ERROR, "Error initializing pack\n" );
 error1:
     rl_backgrnd_destroy();
     return false;
+  }
+  
+  rl_entry_t entry;
+  
+  if ( rl_find_entry( &entry, &state.pack, "smile.png" ) != 0 )
+  {
+    log_cb( RETRO_LOG_ERROR, "Error finding entry smile.png\n" );
+error2:
+    rl_pack_destroy( &pack );
+    goto error1;
+  }
+  
+  if ( rl_imgdata_create( &state.imgdata, entry.contents, entry.size ) != 0 )
+  {
+    log_cb( RETRO_LOG_ERROR, "Error loading image smile.png\n" );
+error3:
+    rl_pack_entry_destroy( &entry );
+    goto error2;
   }
 
   if ( rl_image_create( &state.image, &state.imgdata, 0, 0 ) != 0 )
   {
     log_cb( RETRO_LOG_ERROR, "Error creating RLE-image\n" );
-error2:
+error4:
     rl_imgdata_destroy( &state.imgdata );
-    goto error1;
+    goto error3;
   }
 
   for ( unsigned i = 0; i < COUNT; i++ )
@@ -123,7 +142,7 @@ error2:
     if ( sprite == NULL )
     {
       log_cb( RETRO_LOG_ERROR, "Error creating sprite %u of %u\n", i, COUNT );
-error3:
+error5:
       rl_image_destroy( &state.image );
 
       for ( i = 0; i < COUNT; i++ )
@@ -134,7 +153,7 @@ error3:
         }
       }
 
-      goto error2;
+      goto error4;
     }
 
     sprite->x = rand() % ( WIDTH - state.imgdata.width + 1 );
@@ -147,16 +166,31 @@ error3:
     state.smiles[ i ].dy = rand() & 1 ? -1 : 1;
   }
 
-  if ( rl_sound_create_ogg( &state.music, res_sketch008_ogg, sizeof( res_sketch008_ogg ) ) != 0 )
+  if ( rl_find_entry( &state.music_data, &state.pack, "sketch008.ogg" ) != 0 )
   {
-    log_cb( RETRO_LOG_ERROR, "Error loading music sketch008.ogg\n" );
-    goto error3;
+    log_cb( RETRO_LOG_ERROR, "Error finding entry sketch008.ogg\n" );
+error6:
+    goto error5;
   }
   
-  if ( rl_sound_create_wav( &state.sound, res_bounce_wav, sizeof( res_bounce_wav ) ) != 0 )
+  if ( rl_sound_create_ogg( &state.music, state.music_data.contents, state.music_data.size ) != 0 )
+  {
+    log_cb( RETRO_LOG_ERROR, "Error loading music sketch008.ogg\n" );
+error7:
+    goto error6;
+  }
+  
+  if ( rl_find_entry( &entry, &state.pack, "bounce.wav" ) != 0 )
+  {
+    log_cb( RETRO_LOG_ERROR, "Error finding entry bounce.wav\n" );
+error8:
+    goto error7;
+  }
+  
+  if ( rl_sound_create_wav( &state.sound, entry.contents, entry.size ) != 0 )
   {
     log_cb( RETRO_LOG_ERROR, "Error loading wave bounce.wav\n" );
-    goto error3;
+    goto error8;
   }
   
   rl_sound_play( &state.music, 1, NULL );
@@ -318,6 +352,7 @@ void retro_unload_game( void )
 {
   rl_sound_destroy( &state.sound );
   rl_sound_destroy( &state.music );
+  rl_pack_entry_destroy( &state.music_data );
 
   for ( unsigned i = 0; i < COUNT; i++ )
   {
@@ -326,6 +361,7 @@ void retro_unload_game( void )
 
   rl_imgdata_destroy( &state.imgdata );
   rl_image_destroy( &state.image );
+  rl_pack_destroy( &state.pack );
   rl_backgrnd_destroy();
 }
 

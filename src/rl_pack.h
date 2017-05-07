@@ -1,31 +1,33 @@
 #ifndef RL_PACK_H
 #define RL_PACK_H
 
-#include <stdint.h>
+#include <rl_userdata.h>
 
-/* Flag that the archive/entry has already been converted. */
-#define RL_ENDIAN_CONVERTED 0x80000000UL
+#include <stdint.h>
+#include <stddef.h>
 
 typedef struct
 {
-  uint32_t name_hash;
-  uint32_t name_offset;
-  uint32_t data_offset;
-  uint32_t data_size;
+  rl_userdata_t ud;
   
-  uint32_t runtime_flags;
+  const void* buffer;
+  size_t      buffer_len;
+}
+rl_pack_t;
+
+typedef struct
+{
+  rl_userdata_t ud;
+  
+  const void* contents;
+  size_t      size;
 }
 rl_entry_t;
 
-typedef struct
-{
-  uint32_t num_entries;
-  uint32_t runtime_flags;
-  
-  rl_entry_t entries[ 0 ];
-}
-rl_header_t;
+int     rl_pack_create( rl_pack_t* pack, const void* buffer, size_t buffer_len );
+#define rl_pack_destroy( pack )
 
-rl_entry_t* rl_find_entry( void* data, const char* name );
+int     rl_find_entry( rl_entry_t* entry, const rl_pack_t* pack, const char* name );
+#define rl_pack_entry_destroy( entry )
 
 #endif /* RL_PACK_H */

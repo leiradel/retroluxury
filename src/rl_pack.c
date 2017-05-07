@@ -1,50 +1,112 @@
 #include <rl_pack.h>
 
+#include <stdlib.h>
 #include <string.h>
 
-#include <rl_endian.inl>
-#include <rl_hash.inl>
-
-rl_entry_t* rl_find_entry( void* data, const char* name )
+typedef union
 {
-  rl_header_t* header = (rl_header_t*)data;
-  
-  if ( !( header->runtime_flags & RL_ENDIAN_CONVERTED ) )
+  struct
   {
-    if ( isle() )
+    char name[ 100 ];
+    char mode[ 8 ];
+    char owner[ 8 ];
+    char group[ 8 ];
+    char size[ 12 ];
+    char modification[ 12 ];
+    char checksum[ 8 ];
+    char type;
+    char linked[ 100 ];
+  } s;
+  
+  char fill[ 512 ];
+}
+entry_t;
+
+int rl_pack_create( rl_pack_t* pack, const void* buffer, size_t buffer_len )
+{
+  const entry_t* entry;
+  const entry_t* end;
+  int i;
+  long size;
+  char* endptr;
+  
+  if ( ( buffer_len & 511 ) != 0 || buffer_len == 0 )
+  {
+    return -1;
+  }
+  
+  entry = (const entry_t*)buffer;
+  end = (const entry_t*)( (const char*)buffer + buffer_len );
+  
+  while ( entry < end )
+  {
+    for ( i = 0; i < 512; i++ )
     {
-      header->num_entries = be32( header->num_entries );
-      
-      for ( uint32_t i = 0; i < header->num_entries; i++ )
+      if ( ( (char*)entry )[ i ] != 0 )
       {
-        header->entries[ i ].name_hash     = be32( header->entries[ i ].name_hash );
-        header->entries[ i ].name_offset   = be32( header->entries[ i ].name_offset );
-        header->entries[ i ].data_offset   = be32( header->entries[ i ].data_offset );
-        header->entries[ i ].data_size     = be32( header->entries[ i ].data_size );
-        header->entries[ i ].runtime_flags = 0;
+        goto regular;
       }
     }
     
-    header->runtime_flags = RL_ENDIAN_CONVERTED;
+    break;
+    
+  regular:
+    size = strtol( entry->s.size, &endptr, 8 );
+    
+    if ( *endptr != 0 )
+    {
+      return -1;
+    }
+    
+    entry += ( size + 511 ) / 512 + 1;
   }
   
-  uint32_t name_hash = djb2( name );
+  pack->buffer_len = ( entry - (const entry_t*)buffer ) * 512;
   
-  for ( uint32_t i = 0; i < header->num_entries - 1; i++ )
+  while ( entry < end )
   {
-    uint32_t ndx = ( name_hash + i ) % header->num_entries;
-    rl_entry_t* entry = header->entries + ndx;
-    
-    if ( entry->name_hash == name_hash )
+    for ( i = 0; i < 512; i++ )
     {
-      const char* entry_name = (char*)data + entry->name_offset;
-      
-      if ( !strcmp( name, entry_name ) )
+      if ( ( (char*)entry )[ i ] != 0 )
       {
-        return entry;
+        return -1;
       }
     }
+    
+    entry++;
   }
   
-  return NULL;
+  if ( entry != end )
+  {
+    return -1;
+  }
+  
+  pack->buffer = buffer;
+  return 0;
+}
+
+int rl_find_entry( rl_entry_t* entry, const rl_pack_t* pack, const char* name )
+{
+  const entry_t* tar_entry;
+  const entry_t* tar_end;
+  long size;
+  
+  tar_entry = (const entry_t*)pack->buffer;
+  tar_end = (const entry_t*)( (const char*)pack->buffer + pack->buffer_len );
+
+  while ( tar_entry < tar_end )
+  {
+    size = strtol( tar_entry->s.size, NULL, 8 );
+    
+    if ( !strcmp( tar_entry->s.name, name ) )
+    {
+      entry->contents = (void*)( tar_entry + 1 );
+      entry->size = size;
+      return 0;
+    }
+    
+    tar_entry += ( size + 511 ) / 512 + 1;
+  }
+  
+  return -1;
 }

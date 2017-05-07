@@ -3,14 +3,14 @@ TARGET=test$(SOEXT)
 OBJEXT=.o
 CC=gcc
 CXX=g++
-#CCFLAGS=-Wall -O2 --std=c99 -I. -I../src -fPIC
-CCFLAGS=-Wall -O0 -g --std=c99 -I. -I../src -fPIC
+#CCFLAGS=-Wall -O2 --std=c99 -I. -I../src
+CCFLAGS=-Wall -O0 -g --std=c99 -I. -I../src
 CXXFLAGS=$(CCFLAGS)
 LDFLAGS=-L../src
 LIBS=-lretroluxury
 
 OBJS=libretro.o
-RES=res/smile.h res/sketch008.h res/bounce.h
+RES=res/smile.png res/sketch008.ogg res/bounce.wav
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -18,13 +18,7 @@ RES=res/smile.h res/sketch008.h res/bounce.h
 %.o: %.c
 	$(CC) $(CCFLAGS) -c $< -o $@
 
-%.h: %.png
-	xxd -i $< | sed "s/unsigned/const unsigned/g" > $@
-
-%.h: %.ogg
-	xxd -i $< | sed "s/unsigned/const unsigned/g" > $@
-
-%.h: %.wav
+%.h: %.tar
 	xxd -i $< | sed "s/unsigned/const unsigned/g" > $@
 
 all: $(TARGET)
@@ -32,9 +26,14 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CC) -shared $(LDFLAGS) -o $@ $+ $(LIBS)
 
-libretro.o: $(RES)
+libretro.o: pack.h
+
+pack.h: pack.tar
+
+pack.tar: $(RES)
+	tar --xform='s@.*/@@' -cf $@ $+
 
 clean:
-	rm -f $(TARGET) $(OBJS) $(RES)
+	rm -f $(TARGET) $(OBJS) pack.tar
 
 .PHONY: clean
