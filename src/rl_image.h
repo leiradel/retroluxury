@@ -2,7 +2,7 @@
 #define RL_IMAGE_H
 
 #include <rl_userdata.h>
-#include <rl_imgdata.h>
+#include <rl_pixelsrc.h>
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -34,8 +34,8 @@ rl_image_t;
 void rl_image_init( void );
 void rl_image_translate( int x, int y );
 
-/* Creates an image from a rl_imgdata_t. */
-int     rl_image_create( rl_image_t* image, const rl_imgdata_t* imgdata, int check_transp, uint16_t transparent );
+/* Creates an image from a rl_pixelsrc_t. */
+int     rl_image_create( rl_image_t* image, const rl_pixelsrc_t* pixelsrc, int check_transp, uint16_t transparent );
 /* Destroys an image. */
 #define rl_image_destroy( image ) do { free( (void*)( image )->rle ); } while ( 0 )
 

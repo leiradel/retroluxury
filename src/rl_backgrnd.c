@@ -1,8 +1,8 @@
-#include <string.h>
 #include <rl_backgrnd.h>
 #include <rl_config.h>
 
 #include <stdlib.h>
+#include <string.h>
 
 static uint16_t* pixels;
 static int       width, height;

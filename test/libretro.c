@@ -3,7 +3,7 @@
 
 #include <rl_pack.h>
 #include <rl_backgrnd.h>
-#include <rl_imgdata.h>
+#include <rl_pixelsrc.h>
 #include <rl_image.h>
 #include <rl_sprite.h>
 #include <rl_snddata.h>
@@ -25,7 +25,7 @@ smile_t;
 typedef struct
 {
   rl_pack_t    pack;
-  rl_imgdata_t imgdata;
+  rl_pixelsrc_t pixelsrc;
   rl_image_t   image;
   smile_t      smiles[ COUNT ];
   rl_sound_t   music;
@@ -119,7 +119,7 @@ error2:
     goto error1;
   }
   
-  if ( rl_imgdata_create( &state.imgdata, entry.contents, entry.size ) != 0 )
+  if ( rl_pixelsrc_create( &state.pixelsrc, entry.contents, entry.size ) != 0 )
   {
     log_cb( RETRO_LOG_ERROR, "Error loading image smile.png\n" );
 error3:
@@ -127,11 +127,11 @@ error3:
     goto error2;
   }
 
-  if ( rl_image_create( &state.image, &state.imgdata, 0, 0 ) != 0 )
+  if ( rl_image_create( &state.image, &state.pixelsrc, 0, 0 ) != 0 )
   {
     log_cb( RETRO_LOG_ERROR, "Error creating RLE-image\n" );
 error4:
-    rl_imgdata_destroy( &state.imgdata );
+    rl_pixelsrc_destroy( &state.pixelsrc );
     goto error3;
   }
 
@@ -156,8 +156,8 @@ error5:
       goto error4;
     }
 
-    sprite->x = rand() % ( WIDTH - state.imgdata.width + 1 );
-    sprite->y = rand() % ( HEIGHT - state.imgdata.height + 1 );
+    sprite->x = rand() % ( WIDTH - state.pixelsrc.width + 1 );
+    sprite->y = rand() % ( HEIGHT - state.pixelsrc.height + 1 );
     sprite->layer = i;
     sprite->image = &state.image;
 
@@ -262,8 +262,8 @@ void retro_run( void )
 
   input_poll_cb();
 
-  unsigned width = WIDTH - state.imgdata.width;
-  unsigned height = HEIGHT - state.imgdata.height;
+  unsigned width = WIDTH - state.pixelsrc.width;
+  unsigned height = HEIGHT - state.pixelsrc.height;
 
   for ( unsigned i = 0; i < COUNT; i++ )
   {
@@ -359,7 +359,7 @@ void retro_unload_game( void )
     rl_sprite_destroy( state.smiles[ i ].sprite );
   }
 
-  rl_imgdata_destroy( &state.imgdata );
+  rl_pixelsrc_destroy( &state.pixelsrc );
   rl_image_destroy( &state.image );
   rl_pack_destroy( &state.pack );
   rl_backgrnd_destroy();

@@ -1,4 +1,4 @@
-#include <rl_imgdata.h>
+#include <rl_pixelsrc.h>
 
 /*---------------------------------------------------------------------------*/
 /* stb_image config and inclusion */
@@ -9,18 +9,18 @@
 #include "external/stb_image.h"
 /*---------------------------------------------------------------------------*/
 
-int rl_imgdata_create( rl_imgdata_t* imgdata, const void* data, size_t size )
+int rl_pixelsrc_create( rl_pixelsrc_t* pixelsrc, const void* data, size_t size )
 {
   int width, height;
   uint32_t* abgr = (uint32_t*)stbi_load_from_memory( data, size, &width, &height, NULL, STBI_rgb_alpha );
   
   if ( abgr )
   {
-    imgdata->width = width;
-    imgdata->height = height;
-    imgdata->pitch = width;
-    imgdata->abgr = abgr;
-    imgdata->parent = NULL;
+    pixelsrc->width = width;
+    pixelsrc->height = height;
+    pixelsrc->pitch = width;
+    pixelsrc->abgr = abgr;
+    pixelsrc->parent = NULL;
     
     return 0;
   }
@@ -28,7 +28,7 @@ int rl_imgdata_create( rl_imgdata_t* imgdata, const void* data, size_t size )
   return -1;
 }
 
-int rl_imgdata_sub( rl_imgdata_t* imgdata, const rl_imgdata_t* parent, int x0, int y0, int width, int height )
+int rl_pixelsrc_sub( rl_pixelsrc_t* pixelsrc, const rl_pixelsrc_t* parent, int x0, int y0, int width, int height )
 {
   if ( x0 < 0 )
   {
@@ -54,11 +54,11 @@ int rl_imgdata_sub( rl_imgdata_t* imgdata, const rl_imgdata_t* parent, int x0, i
   
   if ( width > 0 && height > 0 )
   {
-    imgdata->width = width;
-    imgdata->height = height;
-    imgdata->pitch = parent->pitch;
-    imgdata->abgr = parent->abgr + y0 * parent->pitch + x0;
-    imgdata->parent = parent;
+    pixelsrc->width = width;
+    pixelsrc->height = height;
+    pixelsrc->pitch = parent->pitch;
+    pixelsrc->abgr = parent->abgr + y0 * parent->pitch + x0;
+    pixelsrc->parent = parent;
     
     return 0;
   }
@@ -66,19 +66,19 @@ int rl_imgdata_sub( rl_imgdata_t* imgdata, const rl_imgdata_t* parent, int x0, i
   return -1;
 }
 
-void rl_imgdata_destroy( const rl_imgdata_t* imgdata )
+void rl_pixelsrc_destroy( const rl_pixelsrc_t* pixelsrc )
 {
-  if ( !imgdata->parent )
+  if ( !pixelsrc->parent )
   {
-    free( (void*)imgdata->abgr );
+    free( (void*)pixelsrc->abgr );
   }
 }
 
-uint32_t rl_imgdata_get_pixel( const rl_imgdata_t* imgdata, int x, int y )
+uint32_t rl_pixelsrc_get_pixel( const rl_pixelsrc_t* pixelsrc, int x, int y )
 {
-  if ( x >= 0 && x < imgdata->width && y >= 0 && y < imgdata->height )
+  if ( x >= 0 && x < pixelsrc->width && y >= 0 && y < pixelsrc->height )
   {
-    return imgdata->abgr[ y * imgdata->pitch + x ];
+    return pixelsrc->abgr[ y * pixelsrc->pitch + x ];
   }
   
   return 0;
@@ -93,9 +93,9 @@ static inline uint16_t rgb24_to_rgb16( int r, int g, int b )
   return ( r << 11 ) | ( g << 5 ) | b;
 }
 
-static inline uint16_t get_pixel( int* alpha, const rl_imgdata_t* imgdata, int x, int y, int check_transp, uint16_t transparent )
+static inline uint16_t get_pixel( int* alpha, const rl_pixelsrc_t* pixelsrc, int x, int y, int check_transp, uint16_t transparent )
 {
-  uint32_t abgr32 = rl_imgdata_get_pixel( imgdata, x, y );
+  uint32_t abgr32 = rl_pixelsrc_get_pixel( pixelsrc, x, y );
   int      a = abgr32 >> 24;
   int      b = ( abgr32 >> 16 ) & 255;
   int      g = ( abgr32 >> 8 ) & 255;
@@ -132,9 +132,9 @@ static inline uint16_t get_pixel( int* alpha, const rl_imgdata_t* imgdata, int x
   return rgb16;
 }
 
-static size_t rle_row( uint16_t* rle, int* bgcount, const rl_imgdata_t* imgdata, int y, int check_transp, uint16_t transparent )
+static size_t rle_row( uint16_t* rle, int* bgcount, const rl_pixelsrc_t* pixelsrc, int y, int check_transp, uint16_t transparent )
 {
-  int width = imgdata->width;
+  int width = pixelsrc->width;
   int num_cols = ( width + ( RL_BACKGRND_MARGIN - 1 ) ) / RL_BACKGRND_MARGIN;
   int dryrun = !rle;
   
@@ -165,7 +165,7 @@ static size_t rle_row( uint16_t* rle, int* bgcount, const rl_imgdata_t* imgdata,
     while ( x < ( xx + RL_BACKGRND_MARGIN ) && x < width )
     {
       int a;
-      get_pixel( &a, imgdata, x, y, check_transp, transparent );
+      get_pixel( &a, pixelsrc, x, y, check_transp, transparent );
       
       int count = 1;
       int xsave = x++;
@@ -173,7 +173,7 @@ static size_t rle_row( uint16_t* rle, int* bgcount, const rl_imgdata_t* imgdata,
       while ( x < ( xx + RL_BACKGRND_MARGIN ) && x < width )
       {
         int aa;
-        get_pixel( &aa, imgdata, x, y, check_transp, transparent );
+        get_pixel( &aa, pixelsrc, x, y, check_transp, transparent );
         
         if ( aa != a )
         {
@@ -195,7 +195,7 @@ static size_t rle_row( uint16_t* rle, int* bgcount, const rl_imgdata_t* imgdata,
       {
         for ( int i = 0; i < count; i++ )
         {
-          uint16_t rgb16 = get_pixel( &a, imgdata, xsave + i, y, check_transp, transparent );
+          uint16_t rgb16 = get_pixel( &a, pixelsrc, xsave + i, y, check_transp, transparent );
           ( *bgcount )++;
           
           if ( !dryrun )
@@ -212,16 +212,16 @@ static size_t rle_row( uint16_t* rle, int* bgcount, const rl_imgdata_t* imgdata,
   return ( rle - start ) * 2;
 }
 
-const void* rl_imgdata_encode( size_t* size, const rl_imgdata_t* imgdata, int check_transp, uint16_t transparent )
+const void* rl_pixelsrc_encode( size_t* size, const rl_pixelsrc_t* pixelsrc, int check_transp, uint16_t transparent )
 {
-  int    width = imgdata->width;
-  int    height = imgdata->height;
+  int    width = pixelsrc->width;
+  int    height = pixelsrc->height;
   int    bgcount = 0;
   size_t total = 0;
   
   for ( int y = 0; y < height; y++ )
   {
-    total += rle_row( NULL, &bgcount, imgdata, y, check_transp, transparent );
+    total += rle_row( NULL, &bgcount, pixelsrc, y, check_transp, transparent );
   }
   
   void* rle = malloc(
@@ -255,7 +255,7 @@ const void* rl_imgdata_encode( size_t* size, const rl_imgdata_t* imgdata, int ch
     for ( int y = 0; y < height; y++ )
     {
       *ptr.u32++    = total;
-      size_t count  = rle_row( (uint16_t*)rledata, &bgcount, imgdata, y, check_transp, transparent );
+      size_t count  = rle_row( (uint16_t*)rledata, &bgcount, pixelsrc, y, check_transp, transparent );
       total        += count;
       rledata      += count;
     }

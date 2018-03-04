@@ -1,10 +1,10 @@
-SOEXT=.dll
+SOEXT=.so
 TARGET=test$(SOEXT)
 OBJEXT=.o
 CC=gcc
 CXX=g++
 #CCFLAGS=-Wall -O2 --std=c99 -I. -I../src
-CCFLAGS=-Wall -O0 -g --std=c99 -I. -I../src
+CCFLAGS=-Wall -O0 -g --std=c99 -fPIC -I. -I../src
 CXXFLAGS=$(CCFLAGS)
 LDFLAGS=-L../src
 LIBS=-lretroluxury

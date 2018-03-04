@@ -1,4 +1,5 @@
 #include <rl_resample.h>
+#include <rl_config.h>
 
 #include <stdlib.h>
 #include <string.h>

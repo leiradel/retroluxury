@@ -1,10 +1,8 @@
 #ifndef RL_RESAMPLE_H
 #define RL_RESAMPLE_H
 
-#include <rl_userdata.h>
-#include <rl_imgdata.h>
-
 #include <stdint.h>
+#include <stdlib.h>
 
 typedef void rl_resampler_t;
 
