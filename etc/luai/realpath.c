@@ -18,6 +18,8 @@
  *
  */
 
+#ifdef WIN32
+
 #include <io.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -91,3 +93,5 @@ _CRTIMP char __cdecl
 }
 
 /* $RCSfile$: end of file */
+
+#endif

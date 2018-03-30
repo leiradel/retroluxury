@@ -9,8 +9,6 @@
 
 #include "boot_lua.h"
 
-char __cdecl *realpath( const char *__restrict__ name, char *__restrict__ resolved );
-
 static int luamain( lua_State* L )
 {
   int          argc = (int)lua_tonumber( L, lua_upvalueindex( 1 ) );

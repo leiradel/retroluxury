@@ -1,13 +1,29 @@
-CFLAGS = -m32 -O3 -I ~/lua-5.3.0/src -Wall
-LFLAGS = -m32 -L ~/lua-5.3.0/src
+platform = unix
+ifeq ($(shell uname -a),)
+	platform = win
+else ifneq ($(findstring MINGW,$(shell uname -a)),)
+	platform = win
+else ifneq ($(findstring win,$(shell uname -a)),)
+	platform = win
+else ifneq ($(findstring Darwin,$(shell uname -a)),)
+	platform = osx
+endif
+
+CFLAGS = -O3 -I ~/Develop/lua-5.3.4/src -Wall
+LFLAGS = -L ~/Develop/lua-5.3.4/src
+LIBS   = -llua
+
+ifneq ($(findstring unix,$(platform)),)
+	LIBS += -lm
+endif
 
 %.o: %.c
 	gcc $(CFLAGS) -I. -c -o $@ $<
 
-all: luai.exe
+all: luai
 
-luai.exe: main.o image.o path.o realpath.o
-	gcc $(LFLAGS) -o $@ $+ -llua
+luai: main.o image.o path.o realpath.o
+	gcc $(LFLAGS) -o $@ $+ $(LIBS)
 
 main.o: main.c boot_lua.h
 
@@ -15,4 +31,4 @@ boot_lua.h: boot.lua
 	xxd -i $< | sed "s@unsigned@@" > $@
 
 clean:
-	rm -f luai.exe main.o image.o path.o realpath.o boot_lua.h
+	rm -f luai main.o image.o path.o realpath.o boot_lua.h

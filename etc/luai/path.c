@@ -5,11 +5,16 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <errno.h>
 
 #include <lua.h>
 #include <lauxlib.h>
 
+#ifdef WIN32
 char __cdecl *realpath( const char *__restrict__ name, char *__restrict__ resolved );
+#else
+#define _MAX_PATH PATH_MAX
+#endif
 
 #define SEPARATOR '/'
 #define OTHER_SEP '\\'
