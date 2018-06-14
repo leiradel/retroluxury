@@ -10,7 +10,7 @@ LDFLAGS=-L../src
 LIBS=-lretroluxury
 
 OBJS=libretro.o
-RES=res/smile.png res/sketch008.ogg res/bounce.wav
+RES=res/smile.png res/sketch008.ogg res/bounce.wav res/b10.bdf
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@

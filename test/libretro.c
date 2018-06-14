@@ -8,6 +8,8 @@
 #include <rl_sprite.h>
 #include <rl_snddata.h>
 #include <rl_sound.h>
+#include <rl_bdffont.h>
+#include <rl_rand.h>
 
 #include "pack.h"
 
@@ -24,13 +26,16 @@ smile_t;
 
 typedef struct
 {
-  rl_pack_t    pack;
+  rl_pack_t     pack;
   rl_pixelsrc_t pixelsrc;
-  rl_image_t   image;
-  smile_t      smiles[ COUNT ];
-  rl_sound_t   music;
-  rl_sound_t   sound;
-  rl_entry_t   music_data;
+  rl_image_t    image;
+  smile_t       smiles[ COUNT ];
+  rl_sound_t    music;
+  rl_sound_t    sound;
+  rl_entry_t    music_data;
+  rl_bdffont_t  font;
+  rl_image_t    text;
+  rl_sprite_t*  text_spt;
 }
 state_t;
 
@@ -92,72 +97,25 @@ bool retro_load_game( const struct retro_game_info* info )
 
   rl_image_init();
   rl_sprite_init();
+  rl_srand( time( NULL ) );
 
-  if ( rl_backgrnd_create( WIDTH, HEIGHT, RL_BACKGRND_EXACT ) != 0 )
-  {
-    log_cb( RETRO_LOG_ERROR, "Error creating the framebuffer\n" );
-    return false;
-  }
-
+  rl_backgrnd_create( WIDTH, HEIGHT, RL_BACKGRND_EXACT );
   rl_backgrnd_clear( RL_COLOR( 64, 64, 64 ) );
   
-  if ( rl_pack_create( &state.pack, (const void*)pack_tar, sizeof( pack_tar ) ) != 0 )
-  {
-    log_cb( RETRO_LOG_ERROR, "Error initializing pack\n" );
-error1:
-    rl_backgrnd_destroy();
-    return false;
-  }
+  rl_pack_create( &state.pack, (const void*)pack_tar, sizeof( pack_tar ) );
   
   rl_entry_t entry;
   
-  if ( rl_find_entry( &entry, &state.pack, "smile.png" ) != 0 )
-  {
-    log_cb( RETRO_LOG_ERROR, "Error finding entry smile.png\n" );
-error2:
-    rl_pack_destroy( &pack );
-    goto error1;
-  }
-  
-  if ( rl_pixelsrc_create( &state.pixelsrc, entry.contents, entry.size ) != 0 )
-  {
-    log_cb( RETRO_LOG_ERROR, "Error loading image smile.png\n" );
-error3:
-    rl_pack_entry_destroy( &entry );
-    goto error2;
-  }
-
-  if ( rl_image_create( &state.image, &state.pixelsrc, 0, 0 ) != 0 )
-  {
-    log_cb( RETRO_LOG_ERROR, "Error creating RLE-image\n" );
-error4:
-    rl_pixelsrc_destroy( &state.pixelsrc );
-    goto error3;
-  }
+  rl_find_entry( &entry, &state.pack, "smile.png" );
+  rl_pixelsrc_create( &state.pixelsrc, entry.contents, entry.size );
+  rl_image_create( &state.image, &state.pixelsrc, 0, 0 );
 
   for ( unsigned i = 0; i < COUNT; i++ )
   {
     rl_sprite_t* sprite = rl_sprite_create();
 
-    if ( sprite == NULL )
-    {
-      log_cb( RETRO_LOG_ERROR, "Error creating sprite %u of %u\n", i, COUNT );
-error5:
-      rl_image_destroy( &state.image );
-
-      for ( i = 0; i < COUNT; i++ )
-      {
-        if ( state.smiles[ i ].sprite != NULL )
-        {
-          rl_sprite_destroy( state.smiles[ i ].sprite );
-        }
-      }
-
-      goto error4;
-    }
-
-    sprite->x = rand() % ( WIDTH - state.pixelsrc.width + 1 );
-    sprite->y = rand() % ( HEIGHT - state.pixelsrc.height + 1 );
+    sprite->x = rl_random( 0, WIDTH - state.pixelsrc.width );
+    sprite->y = rl_random( 0, HEIGHT - state.pixelsrc.height );
     sprite->layer = i;
     sprite->image = &state.image;
 
@@ -166,32 +124,25 @@ error5:
     state.smiles[ i ].dy = rand() & 1 ? -1 : 1;
   }
 
-  if ( rl_find_entry( &state.music_data, &state.pack, "sketch008.ogg" ) != 0 )
-  {
-    log_cb( RETRO_LOG_ERROR, "Error finding entry sketch008.ogg\n" );
-error6:
-    goto error5;
-  }
+  rl_find_entry( &state.music_data, &state.pack, "sketch008.ogg" );
+  rl_sound_create_ogg( &state.music, state.music_data.contents, state.music_data.size );
   
-  if ( rl_sound_create_ogg( &state.music, state.music_data.contents, state.music_data.size ) != 0 )
-  {
-    log_cb( RETRO_LOG_ERROR, "Error loading music sketch008.ogg\n" );
-error7:
-    goto error6;
-  }
-  
-  if ( rl_find_entry( &entry, &state.pack, "bounce.wav" ) != 0 )
-  {
-    log_cb( RETRO_LOG_ERROR, "Error finding entry bounce.wav\n" );
-error8:
-    goto error7;
-  }
-  
-  if ( rl_sound_create_wav( &state.sound, entry.contents, entry.size ) != 0 )
-  {
-    log_cb( RETRO_LOG_ERROR, "Error loading wave bounce.wav\n" );
-    goto error8;
-  }
+  rl_find_entry( &entry, &state.pack, "bounce.wav" );
+  rl_sound_create_wav( &state.sound, entry.contents, entry.size );
+
+  rl_find_entry( &entry, &state.pack, "b10.bdf" );
+  rl_bdffont_create( &state.font, entry.contents );
+
+  rl_pixelsrc_t pixelsrc;
+  int x0, y0;
+  rl_bdffont_render( &pixelsrc, &state.font, &x0, &y0, "retroluxury demo", 0, 0xffffffff );
+  rl_image_create( &state.text, &pixelsrc, 1, 0 );
+  rl_pixelsrc_destroy( &pixelsrc );
+  state.text_spt = rl_sprite_create();
+  state.text_spt->x = ( WIDTH - state.text.width ) / 2;
+  state.text_spt->y = ( HEIGHT - state.text.height ) / 2;
+  state.text_spt->layer = COUNT + 1;
+  state.text_spt->image = &state.text;
   
   rl_sound_play( &state.music, 1, NULL );
   return true;
@@ -316,17 +267,20 @@ void retro_reset( void )
 
 size_t retro_serialize_size( void )
 {
-  return 0;
+  log_cb( RETRO_LOG_INFO, "Returning 4k byte state size\n" );
+  return 4096;
 }
 
 bool retro_serialize( void* data, size_t size )
 {
-  return false;
+  log_cb( RETRO_LOG_INFO, "Sarializing %zu bytes to %p\n", size, data );
+  return true;
 }
 
 bool retro_unserialize( const void* data, size_t size )
 {
-  return false;
+  log_cb( RETRO_LOG_INFO, "Unserializing %zu bytes from %p\n", size, data );
+  return true;
 }
 
 void retro_cheat_reset( void )
@@ -350,6 +304,8 @@ bool retro_load_game_special( unsigned a, const struct retro_game_info* b, size_
 
 void retro_unload_game( void )
 {
+  rl_sprite_destroy( state.text_spt );
+  rl_image_destroy( &state.text );
   rl_sound_destroy( &state.sound );
   rl_sound_destroy( &state.music );
   rl_pack_entry_destroy( &state.music_data );
