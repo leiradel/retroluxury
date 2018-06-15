@@ -1,3 +1,6 @@
 [submodule "src/soloud"]
 	path = src/soloud
 	url = https://github.com/jarikomppa/soloud.git
+[submodule "src/physfs"]
+	path = src/physfs
+	url = https://github.com/criptych/physfs.git
