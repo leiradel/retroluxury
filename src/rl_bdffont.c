@@ -154,15 +154,6 @@ int rl_bdffont_create( rl_bdffont_t* bdffont, const char* path )
   return rl_bdffont_create_filter( bdffont, path, pass_all, NULL );
 }
 
-int  rl_pack_open( rl_stream_t* stream, const char* path, int write );
-int  rl_pack_read( rl_stream_t* stream, void* buffer, unsigned* bytes );
-int  rl_pack_write( rl_stream_t* stream, const void* buffer, unsigned bytes );
-int  rl_pack_seek( rl_stream_t* stream, long offset );
-int  rl_pack_tell( rl_stream_t* stream, unsigned* pos );
-int  rl_pack_size( rl_stream_t* stream, unsigned* bytes );
-int  rl_pack_eof( rl_stream_t* stream );
-void rl_pack_close( rl_stream_t* stream );
-
 int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffont_filter_t filter, void* userdata )
 {
   rl_bdffontchar_t* chr = NULL;
