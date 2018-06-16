@@ -7,7 +7,7 @@ CXX=g++
 CCFLAGS=-Wall -O0 -g --std=c99 -fPIC -I. -I../src
 CXXFLAGS=$(CCFLAGS)
 LDFLAGS=-L../src
-LIBS=-lretroluxury
+LIBS=-lretroluxury -lgcc_s -lgcc
 
 OBJS=libretro.o
 RES=res/smile.png res/sketch008.ogg res/bounce.wav res/b10.bdf
@@ -21,19 +21,15 @@ RES=res/smile.png res/sketch008.ogg res/bounce.wav res/b10.bdf
 %.h: %.tar
 	xxd -i $< | sed "s/unsigned/const unsigned/g" > $@
 
-all: $(TARGET)
+all: $(TARGET) pack.zip
 
 $(TARGET): $(OBJS)
-	$(CC) -shared $(LDFLAGS) -o $@ $+ $(LIBS)
+	$(CXX) -shared $(LDFLAGS) -o $@ $+ $(LIBS)
 
-libretro.o: pack.h
-
-pack.h: pack.tar
-
-pack.tar: $(RES)
-	tar --xform='s@.*/@@' -cf $@ $+
+pack.zip: $(RES)
+	zip -9j $@ $+
 
 clean:
-	rm -f $(TARGET) $(OBJS) pack.tar
+	rm -f $(TARGET) $(OBJS) pack.zip
 
 .PHONY: clean

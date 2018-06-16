@@ -3,110 +3,75 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef union
-{
-  struct
-  {
-    char name[ 100 ];
-    char mode[ 8 ];
-    char owner[ 8 ];
-    char group[ 8 ];
-    char size[ 12 ];
-    char modification[ 12 ];
-    char checksum[ 8 ];
-    char type;
-    char linked[ 100 ];
-  } s;
-  
-  char fill[ 512 ];
-}
-entry_t;
+#include <physfs.h>
 
-int rl_pack_create( rl_pack_t* pack, const void* buffer, size_t buffer_len )
+int rl_pack_init( const char* arg0, const char* organization, const char* app_name )
 {
-  const entry_t* entry;
-  const entry_t* end;
-  int i;
-  long size;
-  char* endptr;
-  
-  if ( ( buffer_len & 511 ) != 0 || buffer_len == 0 )
-  {
-    return -1;
-  }
-  
-  entry = (const entry_t*)buffer;
-  end = (const entry_t*)( (const char*)buffer + buffer_len );
-  
-  while ( entry < end )
-  {
-    for ( i = 0; i < 512; i++ )
-    {
-      if ( ( (char*)entry )[ i ] != 0 )
-      {
-        goto regular;
-      }
-    }
-    
-    break;
-    
-  regular:
-    size = strtol( entry->s.size, &endptr, 8 );
-    
-    if ( *endptr != 0 )
-    {
-      return -1;
-    }
-    
-    entry += ( size + 511 ) / 512 + 1;
-  }
-  
-  pack->buffer_len = ( entry - (const entry_t*)buffer ) * 512;
-  
-  while ( entry < end )
-  {
-    for ( i = 0; i < 512; i++ )
-    {
-      if ( ( (char*)entry )[ i ] != 0 )
-      {
-        return -1;
-      }
-    }
-    
-    entry++;
-  }
-  
-  if ( entry != end )
-  {
-    return -1;
-  }
-  
-  pack->buffer = buffer;
-  return 0;
+  return PHYSFS_init( arg0 ) && PHYSFS_setSaneConfig( organization, app_name, NULL, 0, 0 ) ? 0 : -1;
 }
 
-int rl_find_entry( rl_entry_t* entry, const rl_pack_t* pack, const char* name )
+void rl_pack_done( void )
 {
-  const entry_t* tar_entry;
-  const entry_t* tar_end;
-  long size;
-  
-  tar_entry = (const entry_t*)pack->buffer;
-  tar_end = (const entry_t*)( (const char*)pack->buffer + pack->buffer_len );
+  PHYSFS_deinit();
+}
 
-  while ( tar_entry < tar_end )
+int rl_pack_add( const char* path )
+{
+  return PHYSFS_mount( path, NULL, 1) ? 0 : -1;
+}
+
+int rl_pack_open( rl_stream_t* stream, const char* path, int write )
+{
+  if ( write )
   {
-    size = strtol( tar_entry->s.size, NULL, 8 );
-    
-    if ( !strcmp( tar_entry->s.name, name ) )
-    {
-      entry->contents = (void*)( tar_entry + 1 );
-      entry->size = size;
-      return 0;
-    }
-    
-    tar_entry += ( size + 511 ) / 512 + 1;
+    stream->opaque = (void*)PHYSFS_openWrite( path );
   }
-  
-  return -1;
+  else
+  {
+    stream->opaque = (void*)PHYSFS_openRead( path );
+  }
+
+  return stream->opaque != NULL ? 0 : -1;
+}
+
+int rl_pack_read( rl_stream_t* stream, void* buffer, unsigned* bytes )
+{
+  PHYSFS_sint64 num_read = PHYSFS_readBytes( (PHYSFS_File*)stream->opaque, buffer, *bytes );
+  *bytes = num_read;
+  return num_read != -1 ? 0 : -1;
+}
+
+int rl_pack_write( rl_stream_t* stream, const void* buffer, unsigned bytes )
+{
+  PHYSFS_sint64 num_written = PHYSFS_writeBytes( (PHYSFS_File*)stream->opaque, buffer, bytes );
+  return num_written == bytes ? 0 : -1;
+}
+
+int rl_pack_seek( rl_stream_t* stream, unsigned offset )
+{
+  return PHYSFS_seek( (PHYSFS_File*)stream->opaque, offset ) != 0 ? 0 : -1;
+}
+
+int rl_pack_tell( rl_stream_t* stream, unsigned* pos )
+{
+  PHYSFS_sint64 p = PHYSFS_tell( (PHYSFS_File*)stream->opaque );
+  *pos = p;
+  return p != -1 ? 0 : -1;
+}
+
+int rl_pack_size( rl_stream_t* stream, unsigned* bytes )
+{
+  PHYSFS_sint64 size = PHYSFS_fileLength( (PHYSFS_File*)stream->opaque );
+  *bytes = size;
+  return size != -1 ? 0 : -1;
+}
+
+int rl_pack_eof( rl_stream_t* stream )
+{
+  return PHYSFS_eof( (PHYSFS_File*)stream->opaque );
+}
+
+void rl_pack_close( rl_stream_t* stream )
+{
+  PHYSFS_close( (PHYSFS_File*)stream->opaque );
 }

@@ -1,104 +1,79 @@
 #ifndef RL_SOUND_H
 #define RL_SOUND_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <rl_userdata.h>
-#include <rl_resample.h>
+#include <rl_pack.h>
 
-#include <stdint.h>
-#include <stddef.h>
-#include <stdlib.h>
+#define RL_SOUND_SPEECH_SAW      0
+#define RL_SOUND_SPEECH_TRIANGLE 1
+#define RL_SOUND_SPEECH_SIN      2
+#define RL_SOUND_SPEECH_SQUARE   3
+#define RL_SOUND_SPEECH_PULSE    4
+#define RL_SOUND_SPEECH_NOISE    5
+#define RL_SOUND_SPEECH_WARBLE   6
 
-/* Types of sounds and voices. */
-#define RL_SOUND_TYPE_NONE 0
-#define RL_SOUND_TYPE_WAV  1
-#define RL_SOUND_TYPE_OGG  2
+typedef struct
+{
+  unsigned base_frequency; /* 1330 */
+  float base_speed; /* 10.0f */
+  float base_declination; /* 0.5f */
+  int waveform; /* RL_SOUND_SPEECH_TRIANGLE */
+}
+rl_sound_speech_t;
 
-/* Reasons passed to the stop callback. */
-#define RL_SOUND_FINISHED 0
-#define RL_SOUND_STOPPED  1
-#define RL_SOUND_REPEATED 2
+#define RL_SOUND_SFXR_COIN      0
+#define RL_SOUND_SFXR_LASER     1
+#define RL_SOUND_SFXR_EXPLOSION 2
+#define RL_SOUND_SFXR_POWERUP   3
+#define RL_SOUND_SFXR_HURT      4
+#define RL_SOUND_SFXR_JUMP      5
+#define RL_SOUND_SFXR_BLIP      6
 
 typedef struct
 {
   rl_userdata_t ud;
 
-  unsigned type;
-
-  union
-  {
-    struct
-    {
-      /* wav */
-      size_t         frames;
-      const int16_t* pcm;
-    }
-    wav;
-
-#ifdef RL_OGG_VORBIS
-    struct
-    {
-      /* ogg */
-      size_t      size;
-      const void* data;
-    }
-    ogg;
-#endif
-  }
-  types;
+  void* opaque1;
+  void* opaque2;
 }
 rl_sound_t;
-
-typedef struct rl_voice_t rl_voice_t;
-typedef void ( *rl_soundstop_t )( rl_voice_t* voice, int reason );
-typedef struct stb_vorbis stb_vorbis;
-
-struct rl_voice_t
-{
-  rl_userdata_t ud;
-
-  unsigned          type;
-  int               repeat;
-  const rl_sound_t* sound;
-  rl_soundstop_t    stop_cb;
-
-  union
-  {
-    struct
-    {
-      /* wav */
-      unsigned position;
-    }
-    wav;
-
-#ifdef RL_OGG_VORBIS
-    struct
-    {
-      /* ogg */
-      unsigned    position;
-      unsigned    samples;
-      stb_vorbis* stream;
-      int16_t*    buffer;
-      size_t      buf_samples;
-      rl_resampler_t* resampler;
-    }
-    ogg;
-#endif
-  }
-  types;
-};
 
 void rl_sound_init( void );
 void rl_sound_done( void );
 
-int  rl_sound_create_wav( rl_sound_t* sound, const void* data, size_t size );
-int  rl_sound_create_ogg( rl_sound_t* sound, const void* data, size_t size );
+/* Load an WAV, OGG, or an Open ModPlug Tracker file. */
+int rl_sound_wav( rl_sound_t* sound, const char* path );
+int rl_sound_ogg( rl_sound_t* sound, const char* path );
+int rl_sound_mod( rl_sound_t* sound, const char* path );
+
+/* Sets up a speech sound with default parameters. */
+int rl_sound_speech( rl_sound_t* sound, const char* text );
+/* Sets up a speech sound. */
+int rl_sound_speech_params( rl_sound_t* sound, const char* text, const rl_sound_speech_t* params );
+
+/* Loads SFXR sound parameters from disk. */
+int rl_sound_sfxr_load( rl_sound_t* sound, const char* path );
+/* Builds a SFXR sound based on type and a random seed. */
+int rl_sound_sfxr( rl_sound_t* sound, int type, int seed );
+
+/* Sets up a speech sound. */
+int rl_sound_vizsn( rl_sound_t* sound, const char* text );
+
 void rl_sound_destroy( const rl_sound_t* sound );
 
-rl_voice_t* rl_sound_play( const rl_sound_t* sound, int repeat, rl_soundstop_t stop_cb );
-void        rl_sound_stop( rl_voice_t* voice );
+unsigned rl_sound_play( const rl_sound_t* sound, int repeat );
+void     rl_sound_stop( unsigned voice );
 
 void rl_sound_stop_all( void );
 
 const int16_t* rl_sound_mix( void );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* RL_SOUND_H */

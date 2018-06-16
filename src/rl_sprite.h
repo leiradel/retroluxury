@@ -1,6 +1,10 @@
 #ifndef RL_SPRITE_H
 #define RL_SPRITE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <rl_image.h>
 #include <rl_backgrnd.h>
 #include <rl_userdata.h>
@@ -40,5 +44,9 @@ void rl_sprites_blit_nobg( void );
 
 void rl_sprites_blit( void );
 void rl_sprites_unblit( void );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* RL_SPRITE_H */

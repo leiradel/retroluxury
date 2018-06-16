@@ -1,6 +1,10 @@
 #ifndef RL_XML_H
 #define RL_XML_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <rl_userdata.h>
 
 #include <stddef.h>
@@ -20,5 +24,9 @@ struct rl_xmlhandlers_t
 };
 
 int rl_xml_parse( const char* xml, size_t length, rl_xmlhandlers_t* handlers );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* RL_XML_H */

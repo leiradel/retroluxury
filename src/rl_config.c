@@ -10,14 +10,6 @@ static const rl_config_t config =
   RL_FRAME_RATE,
   RL_SAMPLE_RATE,
   RL_SAMPLES_PER_FRAME,
-  RL_RESAMPLER_QUALITY,
-  RL_MAX_VOICES,
-  RL_OGG_INCREMENT,
-#ifdef RL_OGG_VORBIS
-  1,
-#else
-  0,
-#endif
   RL_USERDATA_COUNT
 };
 

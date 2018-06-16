@@ -1,6 +1,10 @@
 #ifndef RL_BACKGRND_H
 #define RL_BACKGRND_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 #define RL_BACKGRND_EXACT   0
@@ -16,5 +20,9 @@ void rl_backgrnd_destroy( void );
 void      rl_backgrnd_clear( uint16_t color );
 void      rl_backgrnd_scroll( int dx, int dy );
 uint16_t* rl_backgrnd_fb( int* width, int* height );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* RL_BACKGRND_H */

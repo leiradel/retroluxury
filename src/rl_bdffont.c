@@ -149,12 +149,21 @@ static int pass_all( int encoding, int glyph_index, void* userdata ) {
   return encoding != -1 ? encoding : glyph_index;
 }
 
-int rl_bdffont_create( rl_bdffont_t* bdffont, const char* source )
+int rl_bdffont_create( rl_bdffont_t* bdffont, const char* path )
 {
-  return rl_bdffont_create_filter( bdffont, source, pass_all, NULL );
+  return rl_bdffont_create_filter( bdffont, path, pass_all, NULL );
 }
 
-int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* source, rl_bdffont_filter_t filter, void* userdata )
+int  rl_pack_open( rl_stream_t* stream, const char* path, int write );
+int  rl_pack_read( rl_stream_t* stream, void* buffer, unsigned* bytes );
+int  rl_pack_write( rl_stream_t* stream, const void* buffer, unsigned bytes );
+int  rl_pack_seek( rl_stream_t* stream, long offset );
+int  rl_pack_tell( rl_stream_t* stream, unsigned* pos );
+int  rl_pack_size( rl_stream_t* stream, unsigned* bytes );
+int  rl_pack_eof( rl_stream_t* stream );
+void rl_pack_close( rl_stream_t* stream );
+
+int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffont_filter_t filter, void* userdata )
 {
   rl_bdffontchar_t* chr = NULL;
   size_t length;
@@ -166,7 +175,39 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* source, rl_bdff
   int bbw = 0, bbh = 0, bbxoff0x = 0, bbyoff0y = 0;
   int i, j, chr_bbh = 0;
 
+  rl_stream_t stream;
+
+  if ( rl_pack_open( &stream, path, 0 ) != 0 )
+  {
+    return -1;
+  }
+
+  unsigned bytes;
+
+  if ( rl_pack_size( &stream, &bytes ) != 0 )
+  {
+    rl_pack_close( &stream );
+    return -1;
+  }
+
+  char* bdf = (char*)malloc( bytes );
+
+  if ( bdf == NULL )
+  {
+    rl_pack_close( &stream );
+    return -1;
+  }
+
+  if ( rl_pack_read( &stream, bdf, &bytes ) != 0 )
+  {
+    free( bdf );
+    rl_pack_close( &stream );
+    return -1;
+  }
+
+  rl_pack_close( &stream );
   memset( bdffont, 0, sizeof(*bdffont) );
+  const char* source = bdf;
 
   for ( ;; )
   {
@@ -382,6 +423,7 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* source, rl_bdff
 
       /* Sort font by character codes (TODO: should be an hash table). */
       qsort( bdffont->chars, bdffont->num_chars, sizeof( rl_bdffontchar_t ), compare );
+      free( bdf );
       return 0;
     
     default:
@@ -394,6 +436,7 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* source, rl_bdff
   error:
   /* Free everything. */
   rl_bdffont_destroy( bdffont );
+  free( bdf );
   return -1;
 }
 
@@ -426,7 +469,7 @@ static inline const rl_bdffontchar_t* find_char( const rl_bdffont_t* bdffont, in
 void rl_bdffont_size( const rl_bdffont_t* bdffont, int* x0, int* y0, int* width, int* height, const char* text )
 {
   const rl_bdffontchar_t* chr;
-  int code, y, h, minh, maxh;
+  int code, y, h, minh = 0, maxh = 0;
 
   *x0 = *y0 = -1;
   *width = *height = -1;

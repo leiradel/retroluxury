@@ -1,6 +1,10 @@
 #ifndef RL_PACK_H
 #define RL_PACK_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <rl_userdata.h>
 
 #include <stdint.h>
@@ -10,24 +14,26 @@ typedef struct
 {
   rl_userdata_t ud;
   
-  const void* buffer;
-  size_t      buffer_len;
+  void* opaque;
 }
-rl_pack_t;
+rl_stream_t;
 
-typedef struct
-{
-  rl_userdata_t ud;
-  
-  const void* contents;
-  size_t      size;
+int  rl_pack_init( const char* arg0, const char* organization, const char* app_name );
+void rl_pack_done( void );
+
+int  rl_pack_add( const char* path );
+
+int  rl_pack_open( rl_stream_t* stream, const char* path, int write );
+int  rl_pack_read( rl_stream_t* stream, void* buffer, unsigned* bytes );
+int  rl_pack_write( rl_stream_t* stream, const void* buffer, unsigned bytes );
+int  rl_pack_seek( rl_stream_t* stream, unsigned offset );
+int  rl_pack_tell( rl_stream_t* stream, unsigned* pos );
+int  rl_pack_size( rl_stream_t* stream, unsigned* bytes );
+int  rl_pack_eof( rl_stream_t* stream );
+void rl_pack_close( rl_stream_t* stream );
+
+#ifdef __cplusplus
 }
-rl_entry_t;
-
-int     rl_pack_create( rl_pack_t* pack, const void* buffer, size_t buffer_len );
-#define rl_pack_destroy( pack )
-
-int     rl_find_entry( rl_entry_t* entry, const rl_pack_t* pack, const char* name );
-#define rl_pack_entry_destroy( entry )
+#endif
 
 #endif /* RL_PACK_H */

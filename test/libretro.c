@@ -6,16 +6,13 @@
 #include <rl_pixelsrc.h>
 #include <rl_image.h>
 #include <rl_sprite.h>
-#include <rl_snddata.h>
 #include <rl_sound.h>
 #include <rl_bdffont.h>
 #include <rl_rand.h>
 
-#include "pack.h"
-
 #define WIDTH  320
 #define HEIGHT 240
-#define COUNT  ( RL_MAX_VOICES - 1 )
+#define COUNT  8
 
 typedef struct
 {
@@ -26,13 +23,11 @@ smile_t;
 
 typedef struct
 {
-  rl_pack_t     pack;
   rl_pixelsrc_t pixelsrc;
   rl_image_t    image;
   smile_t       smiles[ COUNT ];
   rl_sound_t    music;
   rl_sound_t    sound;
-  rl_entry_t    music_data;
   rl_bdffont_t  font;
   rl_image_t    text;
   rl_sprite_t*  text_spt;
@@ -57,9 +52,9 @@ void retro_get_system_info( struct retro_system_info* info )
 {
   info->library_name = "retroluxury test";
   info->library_version = "0.1";
-  info->need_fullpath = false;
+  info->need_fullpath = true;
   info->block_extract = false;
-  info->valid_extensions = "";
+  info->valid_extensions = "zip";
 }
 
 void retro_set_environment( retro_environment_t cb )
@@ -95,19 +90,18 @@ bool retro_load_game( const struct retro_game_info* info )
     return false;
   }
 
+  rl_sound_init();
   rl_image_init();
   rl_sprite_init();
   rl_srand( time( NULL ) );
 
+  rl_pack_init( NULL, "retroluxury", "libretro_demo" );
+  rl_pack_add( "/home/leiradel/Develop/retroluxury/test/pack.zip" );
+
   rl_backgrnd_create( WIDTH, HEIGHT, RL_BACKGRND_EXACT );
   rl_backgrnd_clear( RL_COLOR( 64, 64, 64 ) );
   
-  rl_pack_create( &state.pack, (const void*)pack_tar, sizeof( pack_tar ) );
-  
-  rl_entry_t entry;
-  
-  rl_find_entry( &entry, &state.pack, "smile.png" );
-  rl_pixelsrc_create( &state.pixelsrc, entry.contents, entry.size );
+  rl_pixelsrc_create( &state.pixelsrc, "/smile.png" );
   rl_image_create( &state.image, &state.pixelsrc, 0, 0 );
 
   for ( unsigned i = 0; i < COUNT; i++ )
@@ -124,19 +118,14 @@ bool retro_load_game( const struct retro_game_info* info )
     state.smiles[ i ].dy = rand() & 1 ? -1 : 1;
   }
 
-  rl_find_entry( &state.music_data, &state.pack, "sketch008.ogg" );
-  rl_sound_create_ogg( &state.music, state.music_data.contents, state.music_data.size );
-  
-  rl_find_entry( &entry, &state.pack, "bounce.wav" );
-  rl_sound_create_wav( &state.sound, entry.contents, entry.size );
-
-  rl_find_entry( &entry, &state.pack, "b10.bdf" );
-  rl_bdffont_create( &state.font, entry.contents );
+  rl_sound_ogg( &state.music, "/sketch008.ogg" );
+  rl_sound_wav( &state.sound, "/bounce.wav" );
+  rl_bdffont_create( &state.font, "/b10.bdf" );
 
   rl_pixelsrc_t pixelsrc;
   int x0, y0;
   rl_bdffont_render( &pixelsrc, &state.font, &x0, &y0, "retroluxury demo", 0, 0xffffffff );
-  rl_image_create( &state.text, &pixelsrc, 1, 0 );
+  rl_image_create( &state.text, &pixelsrc, 0, 0 );
   rl_pixelsrc_destroy( &pixelsrc );
   state.text_spt = rl_sprite_create();
   state.text_spt->x = ( WIDTH - state.text.width ) / 2;
@@ -144,7 +133,7 @@ bool retro_load_game( const struct retro_game_info* info )
   state.text_spt->layer = COUNT + 1;
   state.text_spt->image = &state.text;
   
-  rl_sound_play( &state.music, 1, NULL );
+  rl_sound_play( &state.music, 1 );
   return true;
 }
 
@@ -241,7 +230,7 @@ void retro_run( void )
 
     if ( bounced )
     {
-      rl_sound_play( &state.sound, 0, NULL );
+      rl_sound_play( &state.sound, 0 );
     }
   }
 
@@ -308,7 +297,6 @@ void retro_unload_game( void )
   rl_image_destroy( &state.text );
   rl_sound_destroy( &state.sound );
   rl_sound_destroy( &state.music );
-  rl_pack_entry_destroy( &state.music_data );
 
   for ( unsigned i = 0; i < COUNT; i++ )
   {
@@ -317,8 +305,10 @@ void retro_unload_game( void )
 
   rl_pixelsrc_destroy( &state.pixelsrc );
   rl_image_destroy( &state.image );
-  rl_pack_destroy( &state.pack );
   rl_backgrnd_destroy();
+
+  rl_pack_done();
+  rl_sound_done();
 }
 
 unsigned retro_get_region( void )

@@ -1,6 +1,10 @@
 #ifndef RL_CONFIG_H
 #define RL_CONFIG_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* retroluxury version. */
 #define RL_VERSION_MAJOR 1
 #define RL_VERSION_MINOR 0
@@ -36,22 +40,6 @@ value must be used when rle-encoding images with rlrle.lua.
 /* Number of 16-bit stereo samples per frame. DO NOT CHANGE! */
 #define RL_SAMPLES_PER_FRAME ( RL_SAMPLE_RATE / RL_FRAME_RATE )
 
-/* The quality to use with the resampler [0, 10]. */
-#define RL_RESAMPLER_QUALITY 4
-
-/* The maximum number of simultaneous *playing* sounds. */
-#ifndef RL_MAX_VOICES
-#define RL_MAX_VOICES 8
-#endif
-
-/* The buffer increment to use when opening ogg files. */
-#ifndef RL_OGG_INCREMENT
-#define RL_OGG_INCREMENT 32768
-#endif
-
-/* Undef to remove ogg-vorbis support. */
-#define RL_OGG_VORBIS
-
 /* The number of userdata entries in other structures. */
 #ifndef RL_USERDATA_COUNT
 #define RL_USERDATA_COUNT 4
@@ -67,15 +55,15 @@ typedef struct
   unsigned frame_rate;
   unsigned sample_rate;
   unsigned samples_per_frame;
-  unsigned resampler_quality;
-  unsigned max_voices;
-  unsigned ogg_increment;
-  unsigned ogg_vorbis; /* != 0 if compiled with ogg vorbis support */
   unsigned userdata_count;
 }
 rl_config_t;
 
 /* Do *not* use the macros above, use this function to retrieve the runtime values. */
 const rl_config_t* rl_get_config( void );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* RL_CONFIG_H */
