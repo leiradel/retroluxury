@@ -119,7 +119,7 @@ bool retro_load_game( const struct retro_game_info* info )
   }
 
   rl_sound_ogg( &state.music, "/sketch008.ogg" );
-  rl_sound_wav( &state.sound, "/bounce.wav" );
+  rl_sound_sfxr( &state.sound, RL_SOUND_SFXR_COIN, 1 );
   rl_bdffont_create( &state.font, "/b10.bdf" );
 
   rl_pixelsrc_t pixelsrc;
@@ -133,7 +133,7 @@ bool retro_load_game( const struct retro_game_info* info )
   state.text_spt->layer = COUNT + 1;
   state.text_spt->image = &state.text;
   
-  rl_sound_play( &state.music, 1 );
+  rl_sound_play( &state.music, 0.2f, 1 );
   return true;
 }
 
@@ -230,7 +230,7 @@ void retro_run( void )
 
     if ( bounced )
     {
-      rl_sound_play( &state.sound, 0 );
+      rl_sound_play( &state.sound, 1.0f, 0 );
     }
   }
 

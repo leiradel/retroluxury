@@ -6,7 +6,8 @@ extern "C" {
 #endif
 
 #include <rl_userdata.h>
-#include <rl_pack.h>
+
+#include <stdint.h>
 
 #define RL_SOUND_SPEECH_SAW      0
 #define RL_SOUND_SPEECH_TRIANGLE 1
@@ -65,7 +66,7 @@ int rl_sound_vizsn( rl_sound_t* sound, const char* text );
 
 void rl_sound_destroy( const rl_sound_t* sound );
 
-unsigned rl_sound_play( const rl_sound_t* sound, int repeat );
+unsigned rl_sound_play( const rl_sound_t* sound, float volume, int repeat );
 void     rl_sound_stop( unsigned voice );
 
 void rl_sound_stop_all( void );

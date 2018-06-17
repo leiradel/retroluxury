@@ -4,6 +4,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include <physfs.h>
+
 #include <rl_hash.inl>
 
 #define SPACE " \f\r\t\v"
@@ -166,18 +168,18 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
   int bbw = 0, bbh = 0, bbxoff0x = 0, bbyoff0y = 0;
   int i, j, chr_bbh = 0;
 
-  rl_stream_t stream;
+  PHYSFS_File* file = PHYSFS_openRead( path );
 
-  if ( rl_pack_open( &stream, path, 0 ) != 0 )
+  if ( file == NULL )
   {
     return -1;
   }
 
-  unsigned bytes;
+  PHYSFS_sint64 bytes = PHYSFS_fileLength( file );
 
-  if ( rl_pack_size( &stream, &bytes ) != 0 )
+  if ( bytes == -1 )
   {
-    rl_pack_close( &stream );
+    PHYSFS_close( file );
     return -1;
   }
 
@@ -185,18 +187,18 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
 
   if ( bdf == NULL )
   {
-    rl_pack_close( &stream );
+    PHYSFS_close( file );
     return -1;
   }
 
-  if ( rl_pack_read( &stream, bdf, &bytes ) != 0 )
+  if ( PHYSFS_readBytes( file, bdf, bytes ) != bytes )
   {
     free( bdf );
-    rl_pack_close( &stream );
+    PHYSFS_close( file );
     return -1;
   }
 
-  rl_pack_close( &stream );
+  PHYSFS_close( file );
   memset( bdffont, 0, sizeof(*bdffont) );
   const char* source = bdf;
 

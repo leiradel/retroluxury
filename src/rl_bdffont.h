@@ -6,7 +6,6 @@ extern "C" {
 #endif
 
 #include <rl_userdata.h>
-#include <rl_pack.h>
 #include <rl_pixelsrc.h>
 
 #include <stdint.h>

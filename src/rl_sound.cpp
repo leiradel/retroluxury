@@ -9,6 +9,8 @@
 #include <soloud_sfxr.h>
 #include <soloud_vizsn.h>
 
+#include <physfs.h>
+
 static SoLoud::Soloud soloud;
 static int16_t audio_buffer[ RL_SAMPLES_PER_FRAME * 2 ];
 
@@ -19,76 +21,59 @@ public:
   
   bool init( const char* path )
   {
-    return inited = rl_pack_open( &stream, path, 0 ) == 0;
+    _file = PHYSFS_openRead( path );
+    return _file != NULL;
   }
 
   virtual ~PhysicsFsFile()
   {
-    if ( inited )
+    if ( _file != NULL )
     {
-      rl_pack_close( &stream );
+      PHYSFS_close( _file );
+      _file = NULL;
     }
   }
 
   virtual int eof() override
   {
-    return rl_pack_eof( &stream );
+    return PHYSFS_eof( _file );
   }
 
   virtual unsigned int read( unsigned char* aDst, unsigned int aBytes ) override
   {
-    if ( rl_pack_read( &stream, aDst, &aBytes ) != 0 )
-    {
-      return 0;
-    }
-
-    return aBytes;
+    PHYSFS_sint64 num_read = PHYSFS_readBytes( _file, aDst, aBytes );
+    return num_read != -1 ? num_read : 0;
   }
 
   virtual unsigned int length() override
   {
-    unsigned bytes;
-
-    if ( rl_pack_size( &stream, &bytes ) != 0 )
-    {
-      return 0;
-    }
-
-    return bytes;
+    PHYSFS_sint64 size = PHYSFS_fileLength( _file );
+    return size != -1 ? size : 0;
   }
 
   virtual void seek( int aOffset ) override
   {
-    long offset = aOffset;
-
-    if ( offset < 0 )
+    if ( aOffset < 0 )
     {
-      offset += length();
+      aOffset += length();
     }
 
-    rl_pack_seek( &stream, offset );
+    PHYSFS_seek( _file, aOffset );
   }
 
   virtual unsigned int pos() override
   {
-    unsigned pos;
-
-    if ( rl_pack_tell( &stream, &pos ) != 0 )
-    {
-      return 0;
-    }
-
-    return pos;
+    PHYSFS_sint64 pos = PHYSFS_tell( _file );
+    return pos != -1 ? pos : 0;
   }
 
 private:
-  bool inited;
-  rl_stream_t stream;
+  PHYSFS_File* _file;
 };
 
 void rl_sound_init( void )
 {
-  soloud.init( SoLoud::Soloud::CLIP_ROUNDOFF, SoLoud::Soloud::NULLDRIVER, RL_SAMPLE_RATE );
+  soloud.init( SoLoud::Soloud::CLIP_ROUNDOFF, SoLoud::Soloud::NULLDRIVER, RL_SAMPLE_RATE, sizeof( audio_buffer ) );
 }
 
 void rl_sound_done( void )
@@ -257,10 +242,10 @@ void rl_sound_destroy( const rl_sound_t* sound )
   }
 }
 
-unsigned rl_sound_play( const rl_sound_t* sound, int repeat )
+unsigned rl_sound_play( const rl_sound_t* sound, float volume, int repeat )
 {
   auto source = (SoLoud::AudioSource*)sound->opaque1;
-  unsigned voice = soloud.play( *source, 1.0f, 0.0f, true, 0 );
+  unsigned voice = soloud.play( *source, volume, 0.0f, true, 0 );
 
   if ( repeat )
   {

@@ -1,6 +1,6 @@
 #include <rl_pixelsrc.h>
 
-#include <rl_pack.h>
+#include <physfs.h>
 
 /*---------------------------------------------------------------------------*/
 /* stb_image config and inclusion */
@@ -13,30 +13,33 @@
 
 static int rl_stbi_read( void* user, char* data, int size )
 {
-  unsigned bytes = size;
-  return rl_pack_read( (rl_stream_t*)user, data, &bytes ) == 0 ? bytes : 0;
+  PHYSFS_File* file = (PHYSFS_File*)user;
+  PHYSFS_sint64 num_read = PHYSFS_readBytes( file, data, size );
+  return num_read != -1 ? num_read : 0;
 }
 
 void rl_stbi_skip( void* user, int n )
 {
-  unsigned pos;
+  PHYSFS_File* file = (PHYSFS_File*)user;
+  PHYSFS_sint64 pos = PHYSFS_tell( file );
 
-  if ( rl_pack_tell( (rl_stream_t*)user, &pos ) == 0 )
+  if ( pos != -1 )
   {
-    rl_pack_seek( (rl_stream_t*)user, pos + n );
+    PHYSFS_seek( file, pos + n );
   }
 }
 
 int rl_stbi_eof( void* user )
 {
-  return rl_pack_eof( (rl_stream_t*)user );
+  PHYSFS_File* file = (PHYSFS_File*)user;
+  return PHYSFS_eof( file );
 }
 
 int rl_pixelsrc_create( rl_pixelsrc_t* pixelsrc, const char* path )
 {
-  rl_stream_t stream;
+  PHYSFS_File* file = PHYSFS_openRead( path );
 
-  if ( rl_pack_open( &stream, path, 0 ) != 0 )
+  if ( file == NULL )
   {
     return -1;
   }
@@ -47,9 +50,9 @@ int rl_pixelsrc_create( rl_pixelsrc_t* pixelsrc, const char* path )
   callbacks.eof = rl_stbi_eof;
 
   int width, height;
-  uint32_t* abgr = (uint32_t*)stbi_load_from_callbacks( &callbacks, &stream, &width, &height, NULL, STBI_rgb_alpha );
+  uint32_t* abgr = (uint32_t*)stbi_load_from_callbacks( &callbacks, file, &width, &height, NULL, STBI_rgb_alpha );
 
-  rl_pack_close( &stream );
+  PHYSFS_close( file );
 
   if ( abgr )
   {
