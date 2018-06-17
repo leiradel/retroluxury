@@ -37,15 +37,60 @@
 
 #define XVAL( x ) ( isdigit( x ) ? ( x ) - '0' : toupper( x ) - 'A' + 10 )
 
+/*
+"Lines may be of unlimited length."
+
+"In this version, the new maximum length of a value of the type string is 65535
+characters, and hence lines may now be at least this long."
+
+https://wwwimages2.adobe.com/content/dam/acom/en/devnet/font/pdfs/5005.BDF_Spec.pdf
+
+We limit a line at MAXLEN characters at most. If a line is greater than MAXLEN,
+it's likely that the font is too big for use with this engine anyway.
+*/
+#define MAXLEN 1024
+
 static inline void skip_spaces( const char** source )
 {
   *source += strspn( *source, SPACE );
 }
 
-static inline void next_line( const char** source )
+static const char* next_line( char* line, int* len, PHYSFS_File* file )
 {
-  const char* aux = strchr( *source, '\n' );
-  *source = aux != NULL ? aux + 1 : "";
+  int end = 0;
+
+  if ( *len != 0 )
+  {
+    memmove( line, line + *len + 1, MAXLEN - *len - 1 );
+    end = MAXLEN - *len - 2;
+  }
+
+  PHYSFS_sint64 num_read = PHYSFS_readBytes( file, line + end, MAXLEN - end - 1 );
+
+  if ( num_read == -1 )
+  {
+    num_read = 0;
+  }
+
+  line[ num_read + end ] = 0;
+  char* newline = strchr( line, '\n' );
+
+  if ( newline != NULL )
+  {
+    *newline = 0;
+    *len = newline - line;
+
+    if ( newline > line && newline[ -1 ] == '\r' )
+    {
+      newline[ -1 ] = 0;
+    }
+  }
+  else
+  {
+    *len = MAXLEN - 1;
+  }
+
+  return line;
 }
 
 /* Parse an integer updating the pointer. */
@@ -167,6 +212,7 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
   /*int dwx1, dwy1;*/
   int bbw = 0, bbh = 0, bbxoff0x = 0, bbyoff0y = 0;
   int i, j, chr_bbh = 0;
+  char line[ MAXLEN ];
 
   PHYSFS_File* file = PHYSFS_openRead( path );
 
@@ -183,24 +229,8 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
     return -1;
   }
 
-  char* bdf = (char*)malloc( bytes );
-
-  if ( bdf == NULL )
-  {
-    PHYSFS_close( file );
-    return -1;
-  }
-
-  if ( PHYSFS_readBytes( file, bdf, bytes ) != bytes )
-  {
-    free( bdf );
-    PHYSFS_close( file );
-    return -1;
-  }
-
-  PHYSFS_close( file );
-  memset( bdffont, 0, sizeof(*bdffont) );
-  const char* source = bdf;
+  int len = 0;
+  const char* source = next_line( line, &len, file );
 
   for ( ;; )
   {
@@ -222,14 +252,14 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
       /* Issue an error on versions higher than 2.2. */
       if ( i > 2 || ( i == 2 && j > 2 ) ) goto error;
 
-      next_line( &source );
+      source = next_line( line, &len, file );
       break;
 
     /* The FONTBOUNDINGBOX values seems to be defaults for BBX values. */
     case FONTBOUNDINGBOX:
       if ( readint4( &source, &bbw, &bbh, &bbxoff0x, &bbyoff0y ) != 0 ) goto error;
 
-      next_line( &source );
+      source = next_line( line, &len, file );
       break;
 
     case METRICSSET:
@@ -238,7 +268,7 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
       /* We only handle horizontal writing by now. */
       if ( bdffont->metrics_set != 0 ) goto error;
 
-      next_line( &source );
+      source = next_line( line, &len, file );
       break;
 
     /* This is the character's width in pixels. */
@@ -257,7 +287,7 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
         dwx0 = i; dwy0 = j;
       }
 
-      next_line( &source );
+      source = next_line( line, &len, file );
       break;
 
     case CHARS:
@@ -268,8 +298,7 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
 
       if ( bdffont->chars == NULL ) goto error;
 
-      /* num_chars count the number of characters using the filter. */
-      next_line( &source );
+      source = next_line( line, &len, file );
       break;
 
     case STARTCHAR:
@@ -292,7 +321,7 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
       chr->bbxoff0x = bbxoff0x;
       chr->bbyoff0y = bbyoff0y;
 
-      next_line( &source );
+      source = next_line( line, &len, file );
       break;
 
     case ENCODING:
@@ -328,7 +357,7 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
         add = 0;
       }
 
-      next_line( &source );
+      source = next_line( line, &len, file );
       break;
 
     /* The bounding box around the character's black pixels. */
@@ -347,7 +376,7 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
         if ( readint4( &source, &i, &chr_bbh, &i, &i ) != 0 ) goto error;
       }
 
-      next_line( &source );
+      source = next_line( line, &len, file );
       break;
 
     /* BITMAP signals the start of the hex data. */
@@ -355,7 +384,7 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
       /* If chr is NULL the character was not properly started. */
       if ( chr == NULL ) goto error;
 
-      next_line( &source );
+      source = next_line( line, &len, file );
 
       /* Only process the character if it was not filtered out. */
       if ( add )
@@ -382,7 +411,7 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
             length -= 2;
           }
 
-          next_line( &source );
+          source = next_line( line, &len, file );
         }
       }
       else
@@ -390,7 +419,7 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
         /* Skip the bitmap. */
         for ( i = chr_bbh; i != 0; i-- )
         {
-          next_line( &source );
+          source = next_line( line, &len, file );
         }
       }
 
@@ -401,7 +430,7 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
       if ( chr == NULL ) goto error;
 
       chr = NULL;
-      next_line( &source );
+      source = next_line( line, &len, file );
       break;
 
     case ENDFONT:
@@ -416,12 +445,12 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
 
       /* Sort font by character codes (TODO: should be an hash table). */
       qsort( bdffont->chars, bdffont->num_chars, sizeof( rl_bdffontchar_t ), compare );
-      free( bdf );
+      PHYSFS_close( file );
       return 0;
     
     default:
       /* Unknown section, skip. */
-      next_line( &source );
+      source = next_line( line, &len, file );
       break;
     }
   }
@@ -429,7 +458,7 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
   error:
   /* Free everything. */
   rl_bdffont_destroy( bdffont );
-  free( bdf );
+  PHYSFS_close( file );
   return -1;
 }
 
