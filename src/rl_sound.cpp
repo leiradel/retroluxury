@@ -4,7 +4,7 @@
 #include <soloud_file.h>
 #include <soloud_wav.h>
 #include <soloud_wavstream.h>
-//#include <soloud_openmpt.h>
+/*#include <soloud_openmpt.h>*/
 #include <soloud_speech.h>
 #include <soloud_sfxr.h>
 #include <soloud_vizsn.h>
@@ -105,7 +105,7 @@ int rl_sound_wav( rl_sound_t* sound, const char* path )
   return 0;
 }
 
-int rl_sound_ogg( rl_sound_t* sound, const char* path )
+static int open_stream( rl_sound_t* sound, const char* path, SoLoud::WAVSTREAM_FILETYPE type )
 {
   auto file = new PhysicsFsFile;
 
@@ -117,7 +117,7 @@ int rl_sound_ogg( rl_sound_t* sound, const char* path )
 
   auto source = new SoLoud::WavStream;
 
-  if ( source->loadFile( file ) != 0 )
+  if ( source->loadFile( file ) != 0 || source->mFiletype != type )
   {
     delete source;
     delete file;
@@ -127,6 +127,21 @@ int rl_sound_ogg( rl_sound_t* sound, const char* path )
   sound->opaque1 = source;
   sound->opaque2 = file;
   return 0;
+}
+
+int rl_sound_ogg( rl_sound_t* sound, const char* path )
+{
+  return open_stream( sound, path, SoLoud::WAVSTREAM_OGG );
+}
+
+int rl_sound_mp3( rl_sound_t* sound, const char* path )
+{
+  return open_stream( sound, path, SoLoud::WAVSTREAM_MP3 );
+}
+
+int rl_sound_flac( rl_sound_t* sound, const char* path )
+{
+  return open_stream( sound, path, SoLoud::WAVSTREAM_FLAC );
 }
 
 /*int rl_sound_mod( rl_sound_t* sound, const char* path )

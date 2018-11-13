@@ -49,6 +49,8 @@ void rl_sound_done( void );
 /* Load an WAV, OGG, or an Open ModPlug Tracker file. */
 int rl_sound_wav( rl_sound_t* sound, const char* path );
 int rl_sound_ogg( rl_sound_t* sound, const char* path );
+int rl_sound_mp3( rl_sound_t* sound, const char* path );
+int rl_sound_flac( rl_sound_t* sound, const char* path );
 /*int rl_sound_mod( rl_sound_t* sound, const char* path );*/
 
 /* Sets up a speech sound with default parameters. */
