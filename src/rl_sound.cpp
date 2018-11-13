@@ -11,6 +11,8 @@
 
 #include <physfs.h>
 
+#include <string.h>
+
 static SoLoud::Soloud soloud;
 static int16_t audio_buffer[ RL_SAMPLES_PER_FRAME * 2 ];
 
@@ -73,7 +75,7 @@ private:
 
 void rl_sound_init( void )
 {
-  soloud.init( SoLoud::Soloud::CLIP_ROUNDOFF, SoLoud::Soloud::NULLDRIVER, RL_SAMPLE_RATE, sizeof( audio_buffer ) );
+  soloud.init( SoLoud::Soloud::CLIP_ROUNDOFF, SoLoud::Soloud::NULLDRIVER, RL_SAMPLE_RATE, SoLoud::Soloud::AUTO, 2 );
 }
 
 void rl_sound_done( void )
@@ -268,6 +270,24 @@ void rl_sound_stop_all( void )
 
 const int16_t* rl_sound_mix( void )
 {
-  soloud.mixSigned16( audio_buffer, RL_SAMPLES_PER_FRAME );
+  if ( sizeof( short ) == sizeof( int16_t ) )
+  {
+    soloud.mixSigned16( audio_buffer, RL_SAMPLES_PER_FRAME );
+  }
+  else if ( sizeof( short ) < sizeof( int16_t ) )
+  {
+    short buf[ RL_SAMPLES_PER_FRAME * 2 ];
+    soloud.mixSigned16( buf, RL_SAMPLES_PER_FRAME );
+
+    for ( int i = 0; i < RL_SAMPLES_PER_FRAME * 2; i++ )
+    {
+      audio_buffer[ i ] = buf[ i ];
+    }
+  }
+  else
+  {
+    memset( audio_buffer, 0, sizeof( audio_buffer ) );
+  }
+
   return audio_buffer;
 }
