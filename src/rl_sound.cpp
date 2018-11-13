@@ -83,7 +83,6 @@ void rl_sound_done( void )
   soloud.deinit();
 }
 
-/* Load an WAV, OGG, or an Open ModPlug Tracker file. */
 int rl_sound_wav( rl_sound_t* sound, const char* path )
 {
   PhysicsFsFile file;
@@ -130,9 +129,9 @@ int rl_sound_ogg( rl_sound_t* sound, const char* path )
   return 0;
 }
 
-int rl_sound_mod( rl_sound_t* sound, const char* path )
+/*int rl_sound_mod( rl_sound_t* sound, const char* path )
 {
-  /*PhysicsFsFile file;
+  PhysicsFsFile file;
 
   if ( !file.init( path ) )
   {
@@ -149,9 +148,8 @@ int rl_sound_mod( rl_sound_t* sound, const char* path )
 
   sound->opaque1 = source;
   sound->opaque2 = NULL;
-  return 0;*/
-  return -1;
-}
+  return 0;
+}*/
 
 int rl_sound_speech( rl_sound_t* sound, const char* text )
 {

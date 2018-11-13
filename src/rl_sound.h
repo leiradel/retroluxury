@@ -19,10 +19,10 @@ extern "C" {
 
 typedef struct
 {
-  unsigned base_frequency; /* 1330 */
-  float base_speed; /* 10.0f */
-  float base_declination; /* 0.5f */
-  int waveform; /* RL_SOUND_SPEECH_TRIANGLE */
+  unsigned base_frequency;
+  float base_speed;
+  float base_declination;
+  int waveform;
 }
 rl_sound_speech_t;
 
@@ -49,7 +49,7 @@ void rl_sound_done( void );
 /* Load an WAV, OGG, or an Open ModPlug Tracker file. */
 int rl_sound_wav( rl_sound_t* sound, const char* path );
 int rl_sound_ogg( rl_sound_t* sound, const char* path );
-int rl_sound_mod( rl_sound_t* sound, const char* path );
+/*int rl_sound_mod( rl_sound_t* sound, const char* path );*/
 
 /* Sets up a speech sound with default parameters. */
 int rl_sound_speech( rl_sound_t* sound, const char* text );
