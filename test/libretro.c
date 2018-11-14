@@ -118,7 +118,7 @@ bool retro_load_game( const struct retro_game_info* info )
     state.smiles[ i ].dy = rand() & 1 ? -1 : 1;
   }
 
-  rl_sound_ogg( &state.music, "/sketch008.ogg" );
+  rl_sound_stream( &state.music, "/sketch008.ogg" );
   rl_sound_sfxr( &state.sound, RL_SOUND_SFXR_COIN, 1 );
   rl_bdffont_create( &state.font, "/b10.bdf" );
 

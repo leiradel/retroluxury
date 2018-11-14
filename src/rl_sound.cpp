@@ -83,7 +83,7 @@ void rl_sound_done( void )
   soloud.deinit();
 }
 
-int rl_sound_wav( rl_sound_t* sound, const char* path )
+int rl_sound_load( rl_sound_t* sound, const char* path )
 {
   PhysicsFsFile file;
 
@@ -105,7 +105,7 @@ int rl_sound_wav( rl_sound_t* sound, const char* path )
   return 0;
 }
 
-static int open_stream( rl_sound_t* sound, const char* path, SoLoud::WAVSTREAM_FILETYPE type )
+int rl_sound_stream( rl_sound_t* sound, const char* path )
 {
   auto file = new PhysicsFsFile;
 
@@ -117,7 +117,7 @@ static int open_stream( rl_sound_t* sound, const char* path, SoLoud::WAVSTREAM_F
 
   auto source = new SoLoud::WavStream;
 
-  if ( source->loadFile( file ) != 0 || source->mFiletype != type )
+  if ( source->loadFile( file ) != 0 )
   {
     delete source;
     delete file;
@@ -128,43 +128,6 @@ static int open_stream( rl_sound_t* sound, const char* path, SoLoud::WAVSTREAM_F
   sound->opaque2 = file;
   return 0;
 }
-
-int rl_sound_ogg( rl_sound_t* sound, const char* path )
-{
-  return open_stream( sound, path, SoLoud::WAVSTREAM_OGG );
-}
-
-int rl_sound_mp3( rl_sound_t* sound, const char* path )
-{
-  return open_stream( sound, path, SoLoud::WAVSTREAM_MP3 );
-}
-
-int rl_sound_flac( rl_sound_t* sound, const char* path )
-{
-  return open_stream( sound, path, SoLoud::WAVSTREAM_FLAC );
-}
-
-/*int rl_sound_mod( rl_sound_t* sound, const char* path )
-{
-  PhysicsFsFile file;
-
-  if ( !file.init( path ) )
-  {
-    return -1;
-  }
-
-  auto source = new SoLoud::Openmpt;
-
-  if ( source->loadFile( &file ) != 0 )
-  {
-    delete source;
-    return -1;
-  }
-
-  sound->opaque1 = source;
-  sound->opaque2 = NULL;
-  return 0;
-}*/
 
 int rl_sound_speech( rl_sound_t* sound, const char* text )
 {
