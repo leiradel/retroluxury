@@ -18,7 +18,7 @@ static int rl_stbi_read( void* user, char* data, int size )
   return num_read != -1 ? num_read : 0;
 }
 
-void rl_stbi_skip( void* user, int n )
+static void rl_stbi_skip( void* user, int n )
 {
   PHYSFS_File* file = (PHYSFS_File*)user;
   PHYSFS_sint64 pos = PHYSFS_tell( file );
@@ -29,7 +29,7 @@ void rl_stbi_skip( void* user, int n )
   }
 }
 
-int rl_stbi_eof( void* user )
+static int rl_stbi_eof( void* user )
 {
   PHYSFS_File* file = (PHYSFS_File*)user;
   return PHYSFS_eof( file );
