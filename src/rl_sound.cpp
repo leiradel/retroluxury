@@ -234,6 +234,11 @@ unsigned rl_sound_play( const rl_sound_t* sound, float volume, int repeat )
   return voice;
 }
 
+int rl_sound_playing( unsigned voice )
+{
+  return soloud.isValidVoiceHandle( voice ) ? 1 : 0;
+}
+
 void rl_sound_stop( unsigned voice )
 {
   soloud.stop( voice );

@@ -67,6 +67,7 @@ int rl_sound_vizsn( rl_sound_t* sound, const char* text );
 void rl_sound_destroy( const rl_sound_t* sound );
 
 unsigned rl_sound_play( const rl_sound_t* sound, float volume, int repeat );
+int      rl_sound_playing( unsigned voice );
 void     rl_sound_stop( unsigned voice );
 
 void rl_sound_stop_all( void );
