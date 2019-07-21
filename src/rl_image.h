@@ -23,12 +23,7 @@ typedef struct
   int used;      /* number of overwritten pixels on the background */
   
   const void* rle;
-  
-  union
-  {
-    const uint8_t*  data; /* stored row offsets and rle data */
-    const uint32_t* rows; /* offsets to rle data for each row */
-  };
+  const uint32_t* rows; /* offsets to rle data for each row */
 }
 rl_image_t;
 

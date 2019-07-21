@@ -39,7 +39,7 @@ int rl_image_create( rl_image_t* image, const rl_pixelsrc_t* pixelsrc, int check
     image->width  = *ptr.u16++;
     image->height = *ptr.u16++;
     image->used   = *ptr.u32++;
-    image->data   = ptr.u8;
+    image->rows   = ptr.u32;
     
     return 0;
   }
@@ -100,7 +100,7 @@ void rl_image_blit_nobg( const rl_image_t* image, int x, int y )
     
     do
     {
-      const uint16_t* restrict rle = (uint16_t*)( image->data + image->rows[ y0++ ] );
+      const uint16_t* restrict rle = (uint16_t*)( (const uint8_t*)image->rows + image->rows[ y0++ ] );
       rle += rle[ x0 ];
       
       uint16_t* restrict dest = save;
@@ -235,7 +235,7 @@ uint16_t* rl_image_blit( const rl_image_t* image, int x, int y, uint16_t* bg_ )
     
     do
     {
-      const uint16_t* restrict rle = (uint16_t*)( image->data + image->rows[ y0++ ] );
+      const uint16_t* restrict rle = (uint16_t*)( (const uint8_t*)image->rows + image->rows[ y0++ ] );
       rle += rle[ x0 ];
       
       uint16_t* restrict dest = save;
@@ -379,7 +379,7 @@ void rl_image_unblit( const rl_image_t* image, int x, int y, const uint16_t* bg_
     
     do
     {
-      const uint16_t* restrict rle = (uint16_t*)( image->data + image->rows[ y0++ ] );
+      const uint16_t* restrict rle = (uint16_t*)( (const uint8_t*)image->rows + image->rows[ y0++ ] );
       rle += rle[ x0 ];
       
       uint16_t* restrict dest = save;
