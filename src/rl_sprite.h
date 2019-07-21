@@ -39,7 +39,7 @@ rl_sprite_t* rl_sprite_create( void );
 
 void rl_sprites_blit_nobg( void );
 
-void rl_sprites_blit( void );
+int  rl_sprites_blit( void );
 void rl_sprites_unblit( void );
 
 #ifdef __cplusplus

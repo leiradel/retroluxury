@@ -146,8 +146,9 @@ void rl_sprites_blit_nobg( void )
   num_sprites = new_num_sprites;
 }
 
-void rl_sprites_blit( void )
+int rl_sprites_blit( void )
 {
+  int result = 0;
   spt_t* sptptr = sprites;
   const spt_t* endptr = sprites + num_sprites;
   
@@ -177,6 +178,13 @@ void rl_sprites_blit( void )
   {
     do
     {
+      ptrdiff_t available = saved_ptr - saved_backgrnd;
+
+      /* Don't blit any other sprites if the background space is exhausted */
+      if (available < sptptr->item->sprite.image->used) {
+        break;
+      }
+
       sptptr->item->bg = saved_ptr;
       saved_ptr = rl_image_blit( sptptr->item->sprite.image, sptptr->item->sprite.x, sptptr->item->sprite.y, saved_ptr );
       sptptr++;
@@ -185,7 +193,19 @@ void rl_sprites_blit( void )
   }
   
   num_visible = sptptr - sprites;
-  
+
+  /* Jump over active and visible sprites that weren't blit */
+  if ( sptptr->item->sprite.flags == 0 )
+  {
+    result = -1;
+
+    do
+    {
+      sptptr++;
+    }
+    while ( sptptr->item->sprite.flags == 0 );
+  }
+
   /* Jump over active but invisible sprites */
   /* flags & 0x0004U == 0x0000U */
   if ( ( sptptr->item->sprite.flags & RL_SPRITE_UNUSED ) == 0 )
@@ -215,6 +235,7 @@ void rl_sprites_blit( void )
   }
   
   num_sprites = new_num_sprites;
+  return result;
 }
 
 void rl_sprites_unblit( void )
