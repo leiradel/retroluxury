@@ -1,4 +1,5 @@
 #include <rl_pixelsrc.h>
+#include <rl_config.h>
 
 #include <physfs.h>
 

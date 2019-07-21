@@ -7,7 +7,6 @@ extern "C" {
 
 #include <rl_image.h>
 #include <rl_backgrnd.h>
-#include <rl_userdata.h>
 
 #include <stdint.h>
 
@@ -24,8 +23,6 @@ of the next frame.
 
 typedef struct
 {
-  rl_userdata_t ud;
-  
   uint16_t layer;
   uint16_t flags;
   int      x;

@@ -5,7 +5,6 @@
 extern "C" {
 #endif
 
-#include <rl_userdata.h>
 #include <rl_pixelsrc.h>
 
 #include <stdint.h>
@@ -19,8 +18,6 @@ background with that information when unblit.
 
 typedef struct
 {
-  rl_userdata_t ud;
-  
   int width;     /* the image width */
   int height;    /* the image height */
   int used;      /* number of overwritten pixels on the background */

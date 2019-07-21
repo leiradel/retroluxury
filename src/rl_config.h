@@ -40,11 +40,6 @@ value must be used when rle-encoding images with rlrle.lua.
 /* Number of 16-bit stereo samples per frame. DO NOT CHANGE! */
 #define RL_SAMPLES_PER_FRAME ( RL_SAMPLE_RATE / RL_FRAME_RATE )
 
-/* The number of userdata entries in other structures. */
-#ifndef RL_USERDATA_COUNT
-#define RL_USERDATA_COUNT 4
-#endif
-
 typedef struct
 {
   unsigned version_major;

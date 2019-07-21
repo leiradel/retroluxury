@@ -5,16 +5,12 @@
 extern "C" {
 #endif
 
-#include <rl_userdata.h>
-
 #include <stddef.h>
 
 typedef struct rl_xmlhandlers_t rl_xmlhandlers_t;
 
 struct rl_xmlhandlers_t
 {
-  rl_userdata_t ud;
-  
   int ( *start_document )( rl_xmlhandlers_t* handlers );
   int ( *end_document )( rl_xmlhandlers_t* handlers );
   int ( *start_element )( rl_xmlhandlers_t* handlers, const char* name, size_t length );

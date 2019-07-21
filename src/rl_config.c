@@ -9,8 +9,7 @@ static const rl_config_t config =
   RL_BG_SAVE_SIZE,
   RL_FRAME_RATE,
   RL_SAMPLE_RATE,
-  RL_SAMPLES_PER_FRAME,
-  RL_USERDATA_COUNT
+  RL_SAMPLES_PER_FRAME
 };
 
 const rl_config_t* rl_get_config( void )

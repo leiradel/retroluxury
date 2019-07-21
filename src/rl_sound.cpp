@@ -1,4 +1,5 @@
 #include <rl_sound.h>
+#include <rl_config.h>
 
 #include <soloud.h>
 #include <soloud_file.h>

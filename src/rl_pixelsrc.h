@@ -5,8 +5,6 @@
 extern "C" {
 #endif
 
-#include <rl_userdata.h>
-
 #include <stdint.h>
 #include <stddef.h>
 
@@ -14,8 +12,6 @@ typedef struct rl_pixelsrc_t rl_pixelsrc_t;
 
 struct rl_pixelsrc_t
 {
-  rl_userdata_t ud;
-  
   int width;  /* the image width */
   int height; /* the image height */
   int pitch;  /* how many pixels to go down to the next line */

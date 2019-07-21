@@ -1,5 +1,6 @@
 #include <rl_image.h>
 #include <rl_backgrnd.h>
+#include <rl_config.h>
 
 #include <stdlib.h>
 #include <string.h>

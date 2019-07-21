@@ -5,7 +5,6 @@
 extern "C" {
 #endif
 
-#include <rl_userdata.h>
 #include <rl_pixelsrc.h>
 
 #include <stdint.h>
@@ -23,8 +22,6 @@ rl_bdffontchar_t;
 
 typedef struct
 {
-  rl_userdata_t ud;
-  
   int metrics_set, num_chars;
   rl_bdffontchar_t* chars;
 }

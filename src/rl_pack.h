@@ -5,8 +5,6 @@
 extern "C" {
 #endif
 
-#include <rl_userdata.h>
-
 #include <stdint.h>
 #include <stddef.h>
 
