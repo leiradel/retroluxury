@@ -171,6 +171,8 @@ int rl_sprites_blit( void )
   
   sptptr = sprites;
   saved_ptr = saved_backgrnd;
+
+  size_t total_used = 0;
   
   /* Iterate over active and visible sprites and blit them */
   /* flags & 0x0007U == 0 */
@@ -178,13 +180,13 @@ int rl_sprites_blit( void )
   {
     do
     {
-      ptrdiff_t available = saved_ptr - saved_backgrnd;
-
       /* Don't blit any other sprites if the background space is exhausted */
-      if (available < sptptr->item->sprite.image->used) {
+      if ( sptptr->item->sprite.image->used + total_used > RL_BG_SAVE_SIZE )
+      {
         break;
       }
 
+      total_used += sptptr->item->sprite.image->used;
       sptptr->item->bg = saved_ptr;
       saved_ptr = rl_image_blit( sptptr->item->sprite.image, sptptr->item->sprite.x, sptptr->item->sprite.y, saved_ptr );
       sptptr++;
