@@ -13,6 +13,9 @@ void rl_pack_done( void );
 
 int  rl_pack_add( const char* path );
 
+int rl_pack_size( const char* path, size_t* size );
+int rl_pack_read( const char* path, void* buffer );
+
 #ifdef __cplusplus
 }
 #endif
