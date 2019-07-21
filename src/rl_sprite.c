@@ -95,7 +95,7 @@ void rl_sprites_blit_nobg( void )
   
   qsort( (void*)sprites, num_sprites, sizeof( spt_t ), compare );
   
-  item_t guard = { { { { { 0 } } } } }; /* Ugh */
+  item_t guard = { { { 0 } } }; /* Ugh */
   guard.sprite.flags = RL_SPRITE_UNUSED;
   sprites[ num_sprites ].item = &guard;
   
@@ -164,7 +164,7 @@ void rl_sprites_blit( void )
   
   qsort( (void*)sprites, num_sprites, sizeof( spt_t ), compare );
   
-  item_t guard = { { { { { 0 } } } } }; /* Ugh */
+  item_t guard = { { { 0 } } }; /* Ugh */
   guard.sprite.flags = RL_SPRITE_UNUSED;
   sprites[ num_sprites ].item = &guard;
   
