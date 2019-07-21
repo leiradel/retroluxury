@@ -1,14 +1,17 @@
-#include <stdlib.h>
 #include <libretro.h>
 
-#include <rl_pack.h>
 #include <rl_backgrnd.h>
-#include <rl_pixelsrc.h>
-#include <rl_image.h>
-#include <rl_sprite.h>
-#include <rl_sound.h>
 #include <rl_bdffont.h>
+#include <rl_config.h>
+#include <rl_image.h>
+#include <rl_pack.h>
+#include <rl_pixelsrc.h>
 #include <rl_rand.h>
+#include <rl_sound.h>
+#include <rl_sprite.h>
+
+#include <stdlib.h>
+#include <time.h>
 
 #define WIDTH  320
 #define HEIGHT 240
@@ -31,6 +34,7 @@ typedef struct
   rl_bdffont_t  font;
   rl_image_t    text;
   rl_sprite_t*  text_spt;
+  rl_rand_t     rand;
 }
 state_t;
 
@@ -93,7 +97,7 @@ bool retro_load_game( const struct retro_game_info* info )
   rl_sound_init();
   rl_image_init();
   rl_sprite_init();
-  rl_srand( time( NULL ) );
+  rl_rand_create( &state.rand, time( NULL ) );
 
   rl_pack_init( NULL, "retroluxury", "libretro_demo" );
   rl_pack_add( "/home/leiradel/Develop/retroluxury/test/pack.zip" );
@@ -108,8 +112,8 @@ bool retro_load_game( const struct retro_game_info* info )
   {
     rl_sprite_t* sprite = rl_sprite_create();
 
-    sprite->x = rl_random( 0, WIDTH - state.pixelsrc.width );
-    sprite->y = rl_random( 0, HEIGHT - state.pixelsrc.height );
+    sprite->x = rl_rand_interval( &state.rand, 0, WIDTH - state.pixelsrc.width );
+    sprite->y = rl_rand_interval( &state.rand, 0, HEIGHT - state.pixelsrc.height );
     sprite->layer = i;
     sprite->image = &state.image;
 
