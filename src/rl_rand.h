@@ -7,9 +7,14 @@ extern "C" {
 
 #include <stdint.h>
 
-void     rl_srand( uint64_t seed );
-uint32_t rl_rand( void );
-int      rl_random( int min, int max );
+typedef struct {
+  uint64_t seed;
+}
+rl_rand_t;
+
+void     rl_rand_create( rl_rand_t* rand, uint64_t seed );
+uint32_t rl_rand_rnd( rl_rand_t* rand );
+int      rl_rand_interval( rl_rand_t* rand, int min, int max );
 
 #ifdef __cplusplus
 }

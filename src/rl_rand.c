@@ -1,26 +1,24 @@
 #include <rl_rand.h>
 
-static uint64_t seed;
-
-void rl_srand( uint64_t s )
+void rl_rand_create( rl_rand_t* rand, uint64_t seed )
 {
-  seed = s;
+  rand->seed = seed;
 }
 
-uint32_t rl_rand( void )
+uint32_t rl_rand_rnd( rl_rand_t* rand )
 {
   /*
   http://en.wikipedia.org/wiki/Linear_congruential_generator
   Newlib parameters
   */
   
-  seed = 6364136223846793005ULL * seed + 1;
-  return seed >> 32;
+  rand->seed = 6364136223846793005ULL * rand->seed + 1;
+  return rand->seed >> 32;
 }
 
-int rl_random( int min, int max )
+int rl_rand_interval( rl_rand_t* rand, int min, int max )
 {
   /* fixed point math */
-  uint64_t dividend = max - min + 1;
-  return (int)( ( ( dividend * rl_rand() ) >> 32 ) + min );
+  uint64_t const dividend = max - min + 1;
+  return (int)( ( ( dividend * rl_rand_rnd( rand ) ) >> 32 ) + min );
 }
