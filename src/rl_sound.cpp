@@ -5,7 +5,7 @@
 #include <soloud_file.h>
 #include <soloud_wav.h>
 #include <soloud_wavstream.h>
-/*#include <soloud_openmpt.h>*/
+#include <soloud_openmpt.h>
 #include <soloud_speech.h>
 #include <soloud_sfxr.h>
 #include <soloud_vizsn.h>
@@ -77,6 +77,7 @@ private:
 void rl_sound_init( void )
 {
   soloud.init( SoLoud::Soloud::CLIP_ROUNDOFF, SoLoud::Soloud::NULLDRIVER, RL_SAMPLE_RATE, SoLoud::Soloud::AUTO, 2 );
+  soloud.setMaxActiveVoiceCount( RL_MAX_VOICES );
 }
 
 void rl_sound_done( void )
@@ -127,6 +128,28 @@ int rl_sound_stream( rl_sound_t* sound, const char* path )
 
   sound->opaque1 = source;
   sound->opaque2 = file;
+  return 0;
+}
+
+int rl_sound_mod_load( rl_sound_t* sound, const char* path )
+{
+  PhysicsFsFile file;
+
+  if ( !file.init( path ) )
+  {
+    return -1;
+  }
+
+  auto source = new SoLoud::Openmpt;
+  
+  if ( source->loadFile( &file ) != 0 )
+  {
+    delete source;
+    return -1;
+  }
+
+  sound->opaque1 = source;
+  sound->opaque2 = NULL;
   return 0;
 }
 
@@ -223,6 +246,11 @@ void rl_sound_destroy( const rl_sound_t* sound )
 
 unsigned rl_sound_play( const rl_sound_t* sound, float volume, int repeat )
 {
+  if ( soloud.getActiveVoiceCount() >= RL_MAX_VOICES )
+  {
+    return -1;
+  }
+
   auto source = (SoLoud::AudioSource*)sound->opaque1;
   unsigned voice = soloud.play( *source, volume, 0.0f, true, 0 );
 

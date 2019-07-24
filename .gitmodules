@@ -7,3 +7,6 @@
 [submodule "src/stb"]
 	path = src/stb
 	url = https://github.com/nothings/stb.git
+[submodule "src/openmpt"]
+	path = src/openmpt
+	url = https://github.com/OpenMPT/openmpt.git

@@ -40,6 +40,9 @@ value must be used when rle-encoding images with rlrle.lua.
 /* Number of 16-bit stereo samples per frame. DO NOT CHANGE! */
 #define RL_SAMPLES_PER_FRAME ( RL_SAMPLE_RATE / RL_FRAME_RATE )
 
+/* Number of sounds that can play simultaneously.  */
+#define RL_MAX_VOICES 32
+
 typedef struct
 {
   unsigned version_major;
@@ -50,7 +53,7 @@ typedef struct
   unsigned frame_rate;
   unsigned sample_rate;
   unsigned samples_per_frame;
-  unsigned userdata_count;
+  unsigned max_voices;
 }
 rl_config_t;
 

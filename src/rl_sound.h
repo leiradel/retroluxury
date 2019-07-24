@@ -47,6 +47,9 @@ int rl_sound_load( rl_sound_t* sound, const char* path );
 /* Stream an WAV, OGG, or a FLAC file. */
 int rl_sound_stream( rl_sound_t* sound, const char* path );
 
+/* Load an OpenMPT file. */
+int rl_sound_mod_load( rl_sound_t* sound, const char* path );
+
 /* Sets up a speech sound with default parameters. */
 int rl_sound_speech( rl_sound_t* sound, const char* text );
 /* Sets up a speech sound. */
