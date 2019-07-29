@@ -1,3 +1,9 @@
+#include <stdio.h>
+
+#include <physfs.h>
+#include <soloud.h>
+#include <libopenmpt.h>
+
 const char* rl_gitstamp =
   "+------------------------------------------+\n"
   "|               RETROLUXURY                |\n"
@@ -11,3 +17,38 @@ const char* rl_gitstamp =
   "+------------------------------------------+\n";
 
 const char* rl_githash = "HASH";
+
+void rl_version_retroluxury( char* version, size_t size )
+{
+  snprintf( version, size, "%s", rl_githash );
+
+  if ( size >= 8)
+  {
+    version[ 7 ] = 0;
+  }
+}
+
+void rl_version_stb_image( char* version, size_t size )
+{
+  snprintf( version, size, "%s", "2.19" );
+}
+
+void rl_version_physfs( char* version, size_t size )
+{
+  PHYSFS_Version v;
+  PHYSFS_getLinkedVersion( &v );
+
+  snprintf( version, size, "%u.%u.%u", v.major, v.minor, v.patch );
+}
+
+void rl_version_soloud( char* version, size_t size )
+{
+  // This should use SoLoud::Soloud::getVersion() */
+  snprintf( version, size, "%u", SOLOUD_VERSION );
+}
+
+void rl_version_libopenmpt( char* version, size_t size )
+{
+  uint32_t v = openmpt_get_library_version();
+  snprintf( version, size, "%u.%u.%u", (v >> 24) & 255, (v >> 16) & 255, v & 0xffffU );
+}

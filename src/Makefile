@@ -11,7 +11,7 @@ FLAGS_LIBOPENMPT = \
   -Iopenmpt/include -DMPT_WITH_ZLIB -Ibuild/svn_version \
   -DMPT_SVNURL=\"https://source.openmpt.org/svn/openmpt/branches/OpenMPT-1.28\" \
   -DMPT_SVNVERSION=\"11826\" -DMPT_SVNDATE=\"2019-07-23T16:39:50Z\" \
-  -DLIBOPENMPT_BUILD -Iopenmpt/build/svn_version
+  -DLIBOPENMPT_BUILD -Iopenmpt/build/svn_version -Iopenmpt/libopenmpt
 
 CFLAGS = -Wall -fPIC -I. $(FLAGS_PHYSFS) $(FLAGS_SOLOUD) $(FLAGS_LIBOPENMPT)
 
@@ -241,7 +241,7 @@ all: libretroluxury.a
 libretroluxury.a: $(OBJS)
 	ar rcs $@ $+
 
-rl_version.c: FORCE
+rl_version.cpp: FORCE
 	cat ../etc/version.c.templ | sed s/HASH/`git rev-parse HEAD | tr -d "\n"`/g > $@
 
 clean:
