@@ -248,11 +248,16 @@ unsigned rl_sound_play( const rl_sound_t* sound, float volume, int repeat )
 {
   if ( soloud.getActiveVoiceCount() >= RL_MAX_VOICES )
   {
-    return -1;
+    return 0;
   }
 
   auto source = (SoLoud::AudioSource*)sound->opaque1;
   unsigned voice = soloud.play( *source, volume, 0.0f, true, 0 );
+
+  if ( voice == 0 )
+  {
+    return 0;
+  }
 
   if ( repeat )
   {
