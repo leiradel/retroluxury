@@ -22,7 +22,7 @@ rl_bdffontchar_t;
 
 typedef struct
 {
-  int metrics_set, num_chars;
+  int metrics_set, num_chars, height, baseline;
   rl_bdffontchar_t* chars;
 }
 rl_bdffont_t;

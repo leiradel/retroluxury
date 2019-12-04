@@ -259,6 +259,9 @@ int rl_bdffont_create_filter( rl_bdffont_t* bdffont, const char* path, rl_bdffon
     case FONTBOUNDINGBOX:
       if ( readint4( &source, &bbw, &bbh, &bbxoff0x, &bbyoff0y ) != 0 ) goto error;
 
+      bdffont->height = bbh;
+      bdffont->baseline = bbh + bbyoff0y;
+
       source = next_line( line, &len, file );
       break;
 
@@ -597,9 +600,8 @@ int rl_bdffont_render( rl_pixelsrc_t* pixelsrc, const rl_bdffont_t* bdffont, int
   pixelsrc->pitch = pixelsrc->width;
   pixelsrc->parent = NULL;
 
-  uint32_t* pixel;
   size_t count = pixelsrc->width * pixelsrc->height;
-  pixelsrc->abgr = pixel = (uint32_t*)malloc( count * sizeof( uint32_t ) );
+  pixelsrc->abgr = (uint32_t*)malloc( count * sizeof( uint32_t ) );
 
   if ( pixel == NULL )
   {
@@ -610,6 +612,8 @@ int rl_bdffont_render( rl_pixelsrc_t* pixelsrc, const rl_bdffont_t* bdffont, int
   {
     *clear = bg_color;
   }
+
+  int x = 0, y = bdffont->baseline;
 
   for ( ;; )
   {
@@ -624,8 +628,14 @@ int rl_bdffont_render( rl_pixelsrc_t* pixelsrc, const rl_bdffont_t* bdffont, int
 
     if ( chr != NULL )
     {
+      int dx = x + chr->bbxoff0x;
+      int dy = y - (chr->bbyoff0y + chr->bbh);
+      uint32_t* pixel = pixelsrc->abgr + dx + dy * pixelsrc->pitch;
+
       draw_char( pixel, pixelsrc->pitch, chr, fg_color );
-      pixel += chr->dwx0 + chr->dwy0 * pixelsrc->pitch;
+
+      x += chr->dwx0;
+      y += chr->dwy0;
     }
   }
 }
